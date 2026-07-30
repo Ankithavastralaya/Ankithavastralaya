@@ -96,31 +96,42 @@ function renderCartPage() {
       <a href="index.html" class="btn btn-ghost">Continue Shopping</a>
       <a href="checkout.html" class="btn btn-primary">Proceed to Checkout</a>
     </div>`;
-
-  root.querySelectorAll('.qty-minus').forEach(btn => btn.addEventListener('click', () => {
-    const cart = getCart();
-    const item = cart.find(i => i.productId === btn.dataset.id);
-    if (item) setQty(item.productId, item.qty - 1);
-    renderCartPage();
-  }));
-  root.querySelectorAll('.qty-plus').forEach(btn => btn.addEventListener('click', () => {
-    const cart = getCart();
-    const item = cart.find(i => i.productId === btn.dataset.id);
-    if (item) setQty(item.productId, item.qty + 1);
-    renderCartPage();
-  }));
-  root.querySelectorAll('.qty-input').forEach(input => input.addEventListener('change', () => {
-    const qty = Math.max(1, parseInt(input.value || '1', 10));
-    setQty(input.dataset.id, qty);
-    renderCartPage();
-  }));
-  root.querySelectorAll('.cart-row-remove').forEach(btn => btn.addEventListener('click', () => {
-    removeFromCart(btn.dataset.id);
-    renderCartPage();
-  }));
 }
 
-document.addEventListener('DOMContentLoaded', renderCartPage);
+// Event delegation on the container itself — attached once, never rebound,
+// so repeated qty +/- or remove clicks always work no matter how many times
+// renderCartPage() has replaced the row markup underneath.
+document.addEventListener('DOMContentLoaded', () => {
+  const root = document.getElementById('cart-root');
+
+  root.addEventListener('click', (e) => {
+    const minusBtn = e.target.closest('.qty-minus');
+    const plusBtn = e.target.closest('.qty-plus');
+    const removeBtn = e.target.closest('.cart-row-remove');
+
+    if (minusBtn) {
+      const item = getCart().find(i => i.productId === minusBtn.dataset.id);
+      if (item) setQty(item.productId, item.qty - 1);
+      renderCartPage();
+    } else if (plusBtn) {
+      const item = getCart().find(i => i.productId === plusBtn.dataset.id);
+      if (item) setQty(item.productId, item.qty + 1);
+      renderCartPage();
+    } else if (removeBtn) {
+      removeFromCart(removeBtn.dataset.id);
+      renderCartPage();
+    }
+  });
+
+  root.addEventListener('change', (e) => {
+    if (!e.target.classList.contains('qty-input')) return;
+    const qty = Math.max(1, parseInt(e.target.value || '1', 10));
+    setQty(e.target.dataset.id, qty);
+    renderCartPage();
+  });
+
+  renderCartPage();
+});
 </script>
 </body>
 </html>
