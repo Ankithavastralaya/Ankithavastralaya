@@ -17,6 +17,7 @@
   --preorder-bg:#faf0e0;
   --soldout:#8a8378;
   --soldout-bg:#eeece7;
+  --dusty-rose:#d3a0ac;
   --serif:'Fraunces', Georgia, serif;
   --sans:'Inter', -apple-system, sans-serif;
   --maxw:1180px;
@@ -271,11 +272,18 @@ section{ padding:16px 0 56px; }
 @media (max-width:640px){ .insta-play-icon{ width:28px; height:28px; font-size:11px; } }
 @media (max-width:400px){ .insta-play-icon{ width:22px; height:22px; font-size:9px; padding-left:2px; } }
 
-footer{ background:var(--ink); color:rgba(255,255,255,0.6); padding:32px 0; text-align:center; font-size:13px; margin-top:auto; }
-footer b{ color:var(--white); }
-.footer-contact{ margin-top:10px; font-size:12.5px; }
+footer{
+  background:var(--maroon);
+  color:rgba(255,255,255,0.75);
+  padding:36px 0;
+  text-align:center;
+  font-size:13px;
+  margin-top:auto;
+}
+footer b{ color:#fff; font-family:var(--serif); font-weight:600; font-size:16px; letter-spacing:0.02em; }
+.footer-contact{ margin-top:12px; font-size:12.5px; display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; }
 .footer-contact a{ color:rgba(255,255,255,0.85); text-decoration:underline; }
-.footer-contact .sep{ margin:0 8px; color:rgba(255,255,255,0.35); }
+.footer-contact .sep{ display:inline-block; color:rgba(255,255,255,0.4); }
 
 #toast{
   position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(120%);
