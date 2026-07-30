@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Cart — Ankitha Vastralaya</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="nav-backdrop"></div>
+<nav id="nav">
+  <div class="nav-inner wrap">
+    <a href="index.html" class="nav-logo">Ankitha <span>Vastralaya</span></a>
+    <div class="nav-menu-wrap">
+      <div class="nav-links-panel" id="nav-links-panel">
+        <ul class="nav-links">
+          <li><a href="index.html" data-page="index">Home</a></li>
+          <li><a href="category.html?cat=sarees" data-page="sarees">Sarees</a></li>
+          <li><a href="category.html?cat=unstitched" data-page="unstitched">Dress Materials</a></li>
+          <li><a href="category.html?cat=readymade" data-page="readymade">Ready-Made</a></li>
+          <li><a href="category.html?cat=jewellery" data-page="jewellery">Jewellery</a></li>
+        </ul>
+      </div>
+      <a href="cart.html" class="nav-cart" aria-label="Cart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="cart-badge hidden" id="cart-badge">0</span>
+      </a>
+      <button id="nav-toggle" aria-label="Open menu" type="button">&#9776;</button>
+    </div>
+  </div>
+</nav>
+
+<section class="wrap">
+  <div class="section-head">
+    <div class="eyebrow">Review your order</div>
+    <h2>Your Cart</h2>
+  </div>
+  <div id="cart-root"></div>
+</section>
+
+<footer>
+  <b>Ankitha Vastralaya</b> — Women's Exclusive Clothing &amp; Jewellery
+  <div class="footer-contact">
+    <a href="https://wa.me/918500907070" target="_blank" rel="noopener">WhatsApp: 85009 07070</a>
+    <span class="sep" aria-hidden="true">&middot;</span>
+    <a href="mailto:ankithavastralaya@gmail.com">ankithavastralaya@gmail.com</a>
+  </div>
+</footer>
+
+<div id="toast"></div>
+
+<script src="js/cart.js"></script>
+<script src="js/nav.js"></script>
+
+<script>
+function renderCartPage() {
+  const root = document.getElementById('cart-root');
+  const cart = getCart();
+
+  if (!cart.length) {
+    root.innerHTML = `
+      <div class="cart-empty">
+        <p>Your cart is empty.</p>
+        <a href="index.html" class="btn btn-primary">Continue Shopping</a>
+      </div>`;
+    return;
+  }
+
+  const rows = cart.map(item => `
+    <div class="cart-row" data-id="${item.productId}">
+      <img class="cart-row-photo" src="${item.photo}" alt="${item.name}">
+      <div class="cart-row-info">
+        <div class="cart-row-name">${item.name}</div>
+        ${item.attributesSummary ? `<div class="cart-row-attrs">${item.attributesSummary}</div>` : ''}
+        <div class="cart-row-stock ${item.stockStatus}">${stockBadgeLabel(item.stockStatus)}</div>
+        <button class="cart-row-remove" data-id="${item.productId}" type="button">Remove</button>
+      </div>
+      <div class="qty-control">
+        <button type="button" class="qty-minus" data-id="${item.productId}" aria-label="Decrease quantity">−</button>
+        <input type="number" class="qty-input" data-id="${item.productId}" value="${item.qty}" min="1">
+        <button type="button" class="qty-plus" data-id="${item.productId}" aria-label="Increase quantity">+</button>
+      </div>
+      <div class="cart-row-price">Rs. ${(item.price * item.qty).toLocaleString('en-IN')}</div>
+    </div>`).join('');
+
+  root.innerHTML = `
+    ${rows}
+    <div class="cart-summary">
+      <span>Subtotal</span>
+      <span>Rs. ${cartTotal(cart).toLocaleString('en-IN')}</span>
+    </div>
+    <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:flex-end;">
+      <a href="index.html" class="btn btn-ghost">Continue Shopping</a>
+      <a href="checkout.html" class="btn btn-primary">Proceed to Checkout</a>
+    </div>`;
+
+  root.querySelectorAll('.qty-minus').forEach(btn => btn.addEventListener('click', () => {
+    const cart = getCart();
+    const item = cart.find(i => i.productId === btn.dataset.id);
+    if (item) setQty(item.productId, item.qty - 1);
+    renderCartPage();
+  }));
+  root.querySelectorAll('.qty-plus').forEach(btn => btn.addEventListener('click', () => {
+    const cart = getCart();
+    const item = cart.find(i => i.productId === btn.dataset.id);
+    if (item) setQty(item.productId, item.qty + 1);
+    renderCartPage();
+  }));
+  root.querySelectorAll('.qty-input').forEach(input => input.addEventListener('change', () => {
+    const qty = Math.max(1, parseInt(input.value || '1', 10));
+    setQty(input.dataset.id, qty);
+    renderCartPage();
+  }));
+  root.querySelectorAll('.cart-row-remove').forEach(btn => btn.addEventListener('click', () => {
+    removeFromCart(btn.dataset.id);
+    renderCartPage();
+  }));
+}
+
+document.addEventListener('DOMContentLoaded', renderCartPage);
+</script>
+</body>
+</html>
