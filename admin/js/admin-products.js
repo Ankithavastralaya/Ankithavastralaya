@@ -7,7 +7,7 @@
 
 import { db } from '../../js/firebase-init.js';
 import {
-  collection, getDocs, getDoc, doc, setDoc, updateDoc, arrayUnion
+  collection, getDocs, getDoc, doc, setDoc, updateDoc, deleteDoc, arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const CATEGORY_LABELS = {
@@ -129,10 +129,25 @@ function addSizeRow(label, stock) {
   sizesRepeater.appendChild(row);
 }
 
+// Handles products saved under earlier schema versions too: oldest was
+// {LABEL: 'in_stock'|'out_of_stock'}, then {LABEL: {stock: N}} — so editing
+// a product added before the size repeater existed still populates
+// correctly instead of erroring out.
+function normalizeSizesForEditor(sizes) {
+  if (!sizes) return [];
+  if (Array.isArray(sizes)) return sizes;
+  return Object.keys(sizes).map(label => {
+    const val = sizes[label];
+    if (val && typeof val === 'object') return { label, stock: Number(val.stock) || 0 };
+    return { label, stock: val === 'out_of_stock' ? 0 : 1 };
+  });
+}
+
 function buildSizesEditor(sizes) {
   sizesRepeater.innerHTML = '';
-  (sizes || []).forEach(s => addSizeRow(s.label, s.stock));
-  if (!sizes || !sizes.length) addSizeRow();
+  const list = normalizeSizesForEditor(sizes);
+  list.forEach(s => addSizeRow(s.label, s.stock));
+  if (!list.length) addSizeRow();
 }
 
 document.getElementById('p-sizes-add').addEventListener('click', () => addSizeRow());
@@ -187,8 +202,10 @@ function renderProductsTable() {
       <td>Rs. ${Number(p.price || 0).toLocaleString('en-IN')}</td>
       <td>${STOCK_LABELS[p.stockStatus] || p.stockStatus}</td>
       <td>
+        <a class="btn btn-ghost btn-small" href="../product.html?id=${encodeURIComponent(p.id)}" target="_blank" rel="noopener">View</a>
         <button class="btn btn-ghost btn-small edit-btn" data-id="${p.id}" type="button">Edit</button>
         <button class="btn btn-ghost btn-small toggle-active-btn" data-id="${p.id}" type="button">${p.active === false ? 'Unhide' : 'Hide'}</button>
+        <button class="btn btn-ghost btn-small delete-btn" data-id="${p.id}" type="button">Delete</button>
       </td>
     </tr>`).join('');
 
@@ -200,6 +217,18 @@ function renderProductsTable() {
       const product = allProducts.find(p => p.id === btn.dataset.id);
       await updateDoc(doc(db, 'products', product.id), { active: product.active === false });
       showToast(product.active === false ? 'Product unhidden' : 'Product hidden');
+      loadProducts();
+    });
+  });
+  productsTbody.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const product = allProducts.find(p => p.id === btn.dataset.id);
+      // Permanent — unlike Hide, this actually erases the product doc, so
+      // confirm before doing anything Firestore-side.
+      const confirmed = window.confirm(`Delete "${product.name}" (${product.id}) permanently? This cannot be undone.`);
+      if (!confirmed) return;
+      await deleteDoc(doc(db, 'products', product.id));
+      showToast('Product deleted');
       loadProducts();
     });
   });

@@ -3,6 +3,22 @@
 
 const CART_KEY = 'av_cart';
 
+// product.sizes has gone through a few schema shapes as this feature
+// evolved: oldest was {LABEL: 'in_stock'|'out_of_stock'}, then
+// {LABEL: {stock: N}}, now an ordered [{label, stock}] array (so any custom
+// size name works, not just a fixed S/M/L/XL list). Normalizing here means
+// products saved under any earlier shape still render correctly instead of
+// silently losing their size selector.
+function normalizeSizes(sizes) {
+  if (!sizes) return [];
+  if (Array.isArray(sizes)) return sizes;
+  return Object.keys(sizes).map(label => {
+    const val = sizes[label];
+    if (val && typeof val === 'object') return { label, stock: Number(val.stock) || 0 };
+    return { label, stock: val === 'out_of_stock' ? 0 : 1 };
+  });
+}
+
 function stockBadgeLabel(status) {
   if (status === 'pre_order') return 'Pre-Order';
   if (status === 'sold_out') return 'Sold Out';

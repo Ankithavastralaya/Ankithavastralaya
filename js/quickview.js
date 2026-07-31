@@ -70,7 +70,7 @@ function openQuickView(product) {
   const priceText = 'Rs. ' + product.price.toLocaleString('en-IN');
   const attrRows = qvAttributeRows(product.attributes);
   const photo = product.photos && product.photos[0] ? product.photos[0] : '';
-  const sizeChipsHTML = product.category === 'readymade' ? qvSizeChipsHTML(product.sizes) : '';
+  const sizeChipsHTML = product.category === 'readymade' ? qvSizeChipsHTML(normalizeSizes(product.sizes)) : '';
   const requiresSize = !!sizeChipsHTML;
 
   modal.querySelector('#quickview-body').innerHTML = `

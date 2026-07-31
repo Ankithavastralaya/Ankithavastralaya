@@ -3,7 +3,7 @@
 // Add-to-Cart wiring only exist in one place.
 
 function productHasSizes(product) {
-  return product.category === 'readymade' && Array.isArray(product.sizes) && product.sizes.length > 0;
+  return product.category === 'readymade' && normalizeSizes(product.sizes).length > 0;
 }
 
 function productCardHTML(product) {

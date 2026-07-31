@@ -63,7 +63,7 @@ function renderProduct(product) {
   const priceText = 'Rs. ' + product.price.toLocaleString('en-IN');
   const attrRows = buildAttributeRows(product.attributes);
   const photos = product.photos && product.photos.length ? product.photos : [''];
-  const sizeChipsHTML = product.category === 'readymade' ? buildSizeChipsHTML(product.sizes) : '';
+  const sizeChipsHTML = product.category === 'readymade' ? buildSizeChipsHTML(normalizeSizes(product.sizes)) : '';
   const requiresSize = !!sizeChipsHTML;
 
   root.innerHTML = `
