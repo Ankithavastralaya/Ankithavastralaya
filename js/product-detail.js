@@ -96,7 +96,7 @@ function renderProduct(product) {
         </div>
         <div class="pd-actions">
           <button class="btn btn-ghost btn-block" id="add-to-cart-btn" type="button">Add to Cart</button>
-          <button class="btn btn-primary btn-block" id="buy-now-btn" type="button">Buy Now</button>
+          <button class="btn btn-gold btn-block" id="buy-now-btn" type="button">Buy Now</button>
         </div>`}
       </div>
     </div>`;

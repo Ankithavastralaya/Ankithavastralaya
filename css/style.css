@@ -44,8 +44,8 @@ body{
 img{max-width:100%;display:block;}
 a{color:inherit;text-decoration:none;}
 h1,h2,h3{font-family:var(--serif); font-weight:600; margin:0;}
-.wrap{max-width:var(--maxw); margin:0 auto; padding:0 24px;}
-@media (max-width:640px){ .wrap{padding:0 16px;} }
+.wrap{max-width:var(--maxw); margin:0 auto; padding-left:24px; padding-right:24px;}
+@media (max-width:640px){ .wrap{padding-left:16px; padding-right:16px;} }
 
 .eyebrow{
   font-size:12px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;
@@ -180,17 +180,26 @@ section{ padding:16px 0 56px; }
 .product-card-actions{ display:flex; gap:6px; margin-top:8px; }
 .product-card-actions .btn{ margin-top:0; flex:1; }
 .product-card-quickview{
-  background:none; border:none; padding:6px 0 0; margin:0;
-  font-size:11px; font-weight:600; letter-spacing:0.03em; color:var(--text-muted);
-  text-decoration:underline; text-underline-offset:2px; cursor:pointer; align-self:center;
+  position:absolute; left:50%; bottom:10px; transform:translateX(-50%);
+  background:rgba(36,22,17,0.82); color:#fff; border:none; padding:8px 18px; border-radius:999px;
+  font-size:11px; font-weight:600; letter-spacing:0.03em; white-space:nowrap; cursor:pointer;
+  opacity:0; pointer-events:none; transition:opacity 0.2s ease;
 }
-.product-card-quickview:hover{ color:var(--maroon); }
+/* Desktop/mouse: reveal Quick View only while actually hovering the photo. */
+@media (hover:hover){
+  .product-card-photo:hover .product-card-quickview{ opacity:1; pointer-events:auto; }
+}
+/* Touch devices have no hover — instead reveal it whenever the card is
+   actually visible on screen (see IntersectionObserver in catalog.js), and
+   hide it again once scrolled away. */
+@media (hover:none){
+  .product-card-photo.card-in-view .product-card-quickview{ opacity:1; pointer-events:auto; }
+}
 @media (max-width:420px){
   .product-card-body{ padding:10px; gap:4px; }
   .product-card-name{ font-size:13px; }
   .product-card-price{ font-size:15px; }
-  .btn-small{ padding:7px 10px; font-size:10.5px; }
-  .product-card-actions{ flex-direction:column; gap:6px; }
+  .btn-small{ padding:7px 6px; font-size:10px; }
 }
 
 .empty-state{ text-align:center; padding:60px 20px; color:var(--text-muted); }
@@ -334,7 +343,7 @@ body.quickview-lock{ overflow:hidden; }
 @media (max-width:400px){ .insta-play-icon{ width:22px; height:22px; font-size:9px; padding-left:2px; } }
 
 footer{
-  background:var(--maroon);
+  background:var(--ink);
   color:rgba(255,255,255,0.75);
   padding:36px 0;
   text-align:center;

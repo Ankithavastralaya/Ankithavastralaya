@@ -88,7 +88,7 @@ function openQuickView(product) {
         <button class="btn btn-ghost btn-block" type="button" disabled>Sold Out</button>` : `
         <div class="pd-actions">
           <button class="btn btn-ghost btn-block" id="qv-add-cart" type="button">Add to Cart</button>
-          <button class="btn btn-primary btn-block" id="qv-buy-now" type="button">Buy Now</button>
+          <button class="btn btn-gold btn-block" id="qv-buy-now" type="button">Buy Now</button>
         </div>`}
       <a href="product.html?id=${encodeURIComponent(product.id)}" class="quickview-full-link">View Full Details</a>
     </div>`;

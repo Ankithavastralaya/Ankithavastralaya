@@ -18,20 +18,20 @@ function productCardHTML(product) {
       <a href="product.html?id=${encodeURIComponent(product.id)}" class="product-card-photo">
         <img src="${photo}" alt="${product.name}" loading="lazy">
         <span class="stock-badge ${product.stockStatus}">${badgeLabel}</span>
+        <button class="product-card-quickview" data-id="${product.id}" type="button" aria-label="Quick view">Quick View</button>
       </a>
       <div class="product-card-body">
         <div class="product-card-cat">${DataSource.categoryLabel(product.category)}</div>
         <a href="product.html?id=${encodeURIComponent(product.id)}"><h3 class="product-card-name">${product.name}</h3></a>
         ${attrs ? `<div class="product-card-attrs">${attrs}</div>` : ''}
         <div class="product-card-price">${priceText}</div>
-        ${soldOut
-          ? `<button class="btn btn-ghost btn-small" type="button" disabled>Sold Out</button>`
-          : `<div class="product-card-actions">
-              <button class="btn btn-ghost btn-small btn-add-cart" data-id="${product.id}" type="button">Add to Cart</button>
-              <button class="btn btn-primary btn-small btn-buy-now" data-id="${product.id}" type="button">Buy Now</button>
-            </div>`}
+        <div class="product-card-actions">
+          ${soldOut
+            ? `<button class="btn btn-ghost btn-small" type="button" disabled>Sold Out</button>`
+            : `<button class="btn btn-ghost btn-small btn-add-cart" data-id="${product.id}" type="button">Add to Cart</button>
+              <button class="btn btn-gold btn-small btn-buy-now" data-id="${product.id}" type="button">Buy Now</button>`}
+        </div>
       </div>
-      <button class="product-card-quickview" data-id="${product.id}" type="button" aria-label="Quick view">Quick View</button>
     </div>`;
 }
 
@@ -74,12 +74,34 @@ function renderProductGrid(containerId, products) {
   });
   container.querySelectorAll('.product-card-quickview').forEach(btn => {
     btn.addEventListener('click', async (e) => {
+      // The button now sits inside the photo <a> (so it can overlay the
+      // image) — stop the click from also bubbling into the link's own
+      // navigation.
       e.preventDefault();
+      e.stopPropagation();
       const product = await DataSource.getProductById(btn.dataset.id);
       if (!product) return;
       openQuickView(product);
     });
   });
+
+  setupQuickViewVisibility(container);
+}
+
+// Desktop reveals Quick View purely via CSS :hover. Touch devices have no
+// hover state, so instead reveal it whenever the card's photo is actually
+// on screen, and hide it again once scrolled away — same intent ("show it
+// only while the product is in view"), just driven by scroll position
+// instead of a pointer.
+function setupQuickViewVisibility(container) {
+  if (!window.matchMedia('(hover: none)').matches) return;
+  if (!('IntersectionObserver' in window)) return;
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      entry.target.classList.toggle('card-in-view', entry.isIntersecting);
+    });
+  }, { threshold: 0.4 });
+  container.querySelectorAll('.product-card-photo').forEach(photo => observer.observe(photo));
 }
 
 async function initHomeFeatured() {
