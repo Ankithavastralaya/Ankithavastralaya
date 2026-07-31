@@ -34,7 +34,11 @@
       <button class="btn btn-primary btn-small" id="add-product-btn" type="button">+ Add Product</button>
     </div>
 
-    <form class="admin-form" id="product-form" style="display:none;">
+    <div class="admin-modal" id="product-modal">
+      <div class="admin-modal-backdrop" id="product-modal-backdrop"></div>
+      <div class="admin-modal-panel">
+        <button class="admin-modal-close" id="product-modal-close" type="button" aria-label="Close">&times;</button>
+        <form class="admin-form" id="product-form">
       <h3 id="product-form-title">Add Product</h3>
       <input type="hidden" id="p-id">
 
@@ -129,11 +133,13 @@
         <button type="submit" class="btn btn-primary" id="p-save-btn">Save Product</button>
         <button type="button" class="btn btn-ghost" id="p-cancel-btn">Cancel</button>
       </div>
-    </form>
+        </form>
+      </div>
+    </div>
 
     <table class="admin-table" id="products-table">
       <thead>
-        <tr><th>Photo</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr>
+        <tr><th>Photo</th><th>Product ID</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr>
       </thead>
       <tbody id="products-tbody"></tbody>
     </table>

@@ -36,8 +36,14 @@ async function searchOrder() {
 }
 
 function renderOrder(orderId, order) {
-  const items = (order.items || []).map(item =>
-    `<div class="order-summary-item"><span>${escapeHtml(item.name)}${item.size ? ` (Size: ${escapeHtml(item.size)})` : ''} x${item.qty}</span><span>Rs. ${Number(item.price * item.qty).toLocaleString('en-IN')}</span></div>`
+  const items = (order.items || []).map(item => `
+    <div class="order-summary-item">
+      <span>
+        ${escapeHtml(item.name)}${item.size ? ` (Size: ${escapeHtml(item.size)})` : ''} x${item.qty}
+        ${item.productId ? `<br><span style="color:var(--text-muted); font-size:11.5px;">Product ID: ${escapeHtml(item.productId)}</span>` : ''}
+      </span>
+      <span>Rs. ${Number(item.price * item.qty).toLocaleString('en-IN')}</span>
+    </div>`
   ).join('');
 
   const customer = order.customer || {};

@@ -49,7 +49,7 @@ async function saveOrderToFirestore(orderId, cart, customer) {
   try {
     await setDoc(doc(db, 'orders', orderId), {
       orderId,
-      items: cart.map(item => ({ name: item.name, qty: item.qty, price: item.price, size: item.size || null })),
+      items: cart.map(item => ({ productId: item.productId, name: item.name, qty: item.qty, price: item.price, size: item.size || null })),
       subtotal: cartTotal(cart),
       customer,
       status: 'placed',

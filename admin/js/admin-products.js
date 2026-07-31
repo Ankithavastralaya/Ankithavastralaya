@@ -7,7 +7,7 @@
 
 import { db } from '../../js/firebase-init.js';
 import {
-  collection, getDocs, doc, addDoc, setDoc, updateDoc, arrayUnion
+  collection, getDocs, doc, setDoc, updateDoc, arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const CATEGORY_LABELS = {
@@ -19,6 +19,19 @@ const CATEGORY_LABELS = {
 const STOCK_LABELS = { in_stock: 'In Stock', pre_order: 'Pre-Order', sold_out: 'Sold Out' };
 const SIZE_OPTIONS = ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
 
+// Short human-readable Product ID (mirrors the Order ID scheme in
+// checkout.js) so the owner has something readable to note down and match
+// against order line items, instead of Firestore's opaque auto-generated
+// doc ID. Used as the Firestore doc ID itself for every new product.
+function generateProductId() {
+  const now = new Date();
+  const y = String(now.getFullYear()).slice(-2);
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  const rand = Math.floor(1000 + Math.random() * 9000);
+  return `AVP${y}${m}${d}-${rand}`;
+}
+
 const productsTbody = document.getElementById('products-tbody');
 const productsEmpty = document.getElementById('products-empty');
 const form = document.getElementById('product-form');
@@ -29,6 +42,22 @@ const customRepeater = document.getElementById('p-custom-repeater');
 const sizesField = document.getElementById('p-sizes-field');
 const sizesEditor = document.getElementById('p-sizes-editor');
 const categorySelect = document.getElementById('p-category');
+const productModal = document.getElementById('product-modal');
+
+// Add/Edit opens as an overlay modal (rather than expanding inline above the
+// table) so the products table never shifts position on screen.
+function openProductModal() {
+  productModal.classList.add('open');
+  document.body.classList.add('admin-modal-lock');
+}
+
+function closeProductModal() {
+  productModal.classList.remove('open');
+  document.body.classList.remove('admin-modal-lock');
+}
+
+productModal.querySelector('#product-modal-backdrop').addEventListener('click', closeProductModal);
+productModal.querySelector('#product-modal-close').addEventListener('click', closeProductModal);
 
 let allProducts = [];
 
@@ -135,6 +164,7 @@ function renderProductsTable() {
   productsTbody.innerHTML = allProducts.map(p => `
     <tr>
       <td><img src="${escapeHtml((p.photos && p.photos[0]) || '')}" alt=""></td>
+      <td class="product-id-cell">${escapeHtml(p.id)}</td>
       <td>${escapeHtml(p.name)}${p.active === false ? ' <em>(hidden)</em>' : ''}</td>
       <td>${CATEGORY_LABELS[p.category] || p.category}</td>
       <td>Rs. ${Number(p.price || 0).toLocaleString('en-IN')}</td>
@@ -174,13 +204,10 @@ function resetForm() {
 document.getElementById('add-product-btn').addEventListener('click', () => {
   resetForm();
   formTitle.textContent = 'Add Product';
-  form.style.display = 'block';
-  form.scrollIntoView({ behavior: 'smooth' });
+  openProductModal();
 });
 
-document.getElementById('p-cancel-btn').addEventListener('click', () => {
-  form.style.display = 'none';
-});
+document.getElementById('p-cancel-btn').addEventListener('click', closeProductModal);
 
 function openFormForEdit(product) {
   if (!product) return;
@@ -212,8 +239,7 @@ function openFormForEdit(product) {
   buildSizesEditor(product.sizes);
   toggleSizesField();
 
-  form.style.display = 'block';
-  form.scrollIntoView({ behavior: 'smooth' });
+  openProductModal();
 }
 
 // ---------- save ----------
@@ -264,7 +290,7 @@ form.addEventListener('submit', async (e) => {
       await setDoc(doc(db, 'products', existingId), productData, { merge: true });
     } else {
       productData.createdAt = new Date().toISOString();
-      await addDoc(collection(db, 'products'), productData);
+      await setDoc(doc(db, 'products', generateProductId()), productData);
     }
 
     // Feed the datalists for next time — arrayUnion is idempotent, safe to
@@ -280,7 +306,7 @@ form.addEventListener('submit', async (e) => {
     }
 
     showToast('Product saved');
-    form.style.display = 'none';
+    closeProductModal();
     await loadProducts();
     await loadMetaSuggestions();
   } catch (err) {
