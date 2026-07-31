@@ -34,6 +34,13 @@
   </div>
 </nav>
 
+<div class="category-strip">
+  <a href="category.html?cat=sarees" class="cat-chip" data-page="sarees">🥻 Sarees</a>
+  <a href="category.html?cat=unstitched" class="cat-chip" data-page="unstitched">🧵 Dress Materials</a>
+  <a href="category.html?cat=readymade" class="cat-chip" data-page="readymade">👗 Ready-Made</a>
+  <a href="category.html?cat=jewellery" class="cat-chip" data-page="jewellery">💍 Jewellery</a>
+</div>
+
 <section class="wrap">
   <div class="section-head">
     <div class="eyebrow">Review your order</div>
@@ -55,6 +62,7 @@
 
 <script src="js/cart.js"></script>
 <script src="js/nav.js"></script>
+<script src="js/whatsapp-float.js"></script>
 
 <script>
 function renderCartPage() {
@@ -70,22 +78,26 @@ function renderCartPage() {
     return;
   }
 
-  const rows = cart.map(item => `
-    <div class="cart-row" data-id="${item.productId}">
+  const rows = cart.map(item => {
+    const key = cartItemKey(item);
+    return `
+    <div class="cart-row" data-id="${key}">
       <img class="cart-row-photo" src="${item.photo}" alt="${item.name}">
       <div class="cart-row-info">
         <div class="cart-row-name">${item.name}</div>
+        ${item.size ? `<div class="cart-row-attrs">Size: ${item.size}</div>` : ''}
         ${item.attributesSummary ? `<div class="cart-row-attrs">${item.attributesSummary}</div>` : ''}
         <div class="cart-row-stock ${item.stockStatus}">${stockBadgeLabel(item.stockStatus)}</div>
-        <button class="cart-row-remove" data-id="${item.productId}" type="button">Remove</button>
+        <button class="cart-row-remove" data-id="${key}" type="button">Remove</button>
       </div>
       <div class="qty-control">
-        <button type="button" class="qty-minus" data-id="${item.productId}" aria-label="Decrease quantity">−</button>
-        <input type="number" class="qty-input" data-id="${item.productId}" value="${item.qty}" min="1">
-        <button type="button" class="qty-plus" data-id="${item.productId}" aria-label="Increase quantity">+</button>
+        <button type="button" class="qty-minus" data-id="${key}" aria-label="Decrease quantity">−</button>
+        <input type="number" class="qty-input" data-id="${key}" value="${item.qty}" min="0">
+        <button type="button" class="qty-plus" data-id="${key}" aria-label="Increase quantity">+</button>
       </div>
       <div class="cart-row-price">Rs. ${(item.price * item.qty).toLocaleString('en-IN')}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   root.innerHTML = `
     ${rows}
@@ -95,7 +107,7 @@ function renderCartPage() {
     </div>
     <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:flex-end;">
       <a href="index.html" class="btn btn-ghost">Continue Shopping</a>
-      <a href="checkout.html" class="btn btn-primary">Proceed to Checkout</a>
+      <a href="checkout.html" class="btn btn-gold">Proceed to Checkout</a>
     </div>`;
 }
 
@@ -111,12 +123,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const removeBtn = e.target.closest('.cart-row-remove');
 
     if (minusBtn) {
-      const item = getCart().find(i => i.productId === minusBtn.dataset.id);
-      if (item) setQty(item.productId, item.qty - 1);
+      const item = getCart().find(i => cartItemKey(i) === minusBtn.dataset.id);
+      if (item) setQty(cartItemKey(item), item.qty - 1);
       renderCartPage();
     } else if (plusBtn) {
-      const item = getCart().find(i => i.productId === plusBtn.dataset.id);
-      if (item) setQty(item.productId, item.qty + 1);
+      const item = getCart().find(i => cartItemKey(i) === plusBtn.dataset.id);
+      if (item) setQty(cartItemKey(item), item.qty + 1);
       renderCartPage();
     } else if (removeBtn) {
       removeFromCart(removeBtn.dataset.id);
@@ -126,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   root.addEventListener('change', (e) => {
     if (!e.target.classList.contains('qty-input')) return;
-    const qty = Math.max(1, parseInt(e.target.value || '1', 10));
+    const qty = Math.max(0, parseInt(e.target.value || '0', 10));
     setQty(e.target.dataset.id, qty);
     renderCartPage();
   });

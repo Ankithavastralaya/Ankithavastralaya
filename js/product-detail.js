@@ -3,6 +3,25 @@
 // attributes.custom[] list — so any brand-new attribute the admin invents
 // later shows up here automatically with no code change.
 
+const SIZE_ORDER = ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+
+function buildSizeChipsHTML(sizes) {
+  if (!sizes) return '';
+  const offered = SIZE_ORDER.filter(s => sizes[s]);
+  if (!offered.length) return '';
+  return `
+    <div class="size-selector" id="size-selector">
+      <div class="size-selector-label">Select Size</div>
+      <div class="size-chip-row">
+        ${offered.map(s => {
+          const outOfStock = sizes[s] === 'out_of_stock';
+          return `<button type="button" class="size-chip ${outOfStock ? 'out-of-stock' : ''}" data-size="${s}" ${outOfStock ? 'disabled' : ''}>${s}</button>`;
+        }).join('')}
+      </div>
+      <div class="size-selector-note" id="size-selector-note"></div>
+    </div>`;
+}
+
 function buildAttributeRows(attributes) {
   if (!attributes) return [];
   const rows = [];
@@ -39,6 +58,8 @@ function renderProduct(product) {
   const priceText = 'Rs. ' + product.price.toLocaleString('en-IN');
   const attrRows = buildAttributeRows(product.attributes);
   const photos = product.photos && product.photos.length ? product.photos : [''];
+  const sizeChipsHTML = product.category === 'readymade' ? buildSizeChipsHTML(product.sizes) : '';
+  const requiresSize = !!sizeChipsHTML;
 
   root.innerHTML = `
     <div class="product-detail">
@@ -58,6 +79,7 @@ function renderProduct(product) {
         ${attrRows.length ? `<table class="attr-table">${attrRows.map(([k, v]) =>
           `<tr><td>${k}</td><td>${v}</td></tr>`
         ).join('')}</table>` : ''}
+        ${!soldOut ? sizeChipsHTML : ''}
         ${soldOut ? `
         <button class="btn btn-ghost btn-block" type="button" disabled>Sold Out</button>` : `
         <div class="pd-qty-row">
@@ -67,7 +89,10 @@ function renderProduct(product) {
             <button type="button" id="qty-plus" aria-label="Increase quantity">+</button>
           </div>
         </div>
-        <button class="btn btn-primary btn-block" id="add-to-cart-btn" type="button">Add to Cart</button>`}
+        <div class="pd-actions">
+          <button class="btn btn-ghost btn-block" id="add-to-cart-btn" type="button">Add to Cart</button>
+          <button class="btn btn-primary btn-block" id="buy-now-btn" type="button">Buy Now</button>
+        </div>`}
       </div>
     </div>`;
 
@@ -81,6 +106,25 @@ function renderProduct(product) {
   });
 
   if (!soldOut) {
+    let selectedSize = null;
+    root.querySelectorAll('.size-chip:not(.out-of-stock)').forEach(chip => {
+      chip.addEventListener('click', () => {
+        root.querySelectorAll('.size-chip').forEach(c => c.classList.remove('selected'));
+        chip.classList.add('selected');
+        selectedSize = chip.dataset.size;
+        const note = document.getElementById('size-selector-note');
+        if (note) note.textContent = '';
+      });
+    });
+
+    function ensureSizeSelected() {
+      if (!requiresSize) return true;
+      if (selectedSize) return true;
+      const note = document.getElementById('size-selector-note');
+      if (note) note.textContent = 'Please select a size before continuing.';
+      return false;
+    }
+
     const qtyInput = document.getElementById('qty-input');
     document.getElementById('qty-minus').addEventListener('click', () => {
       qtyInput.value = Math.max(1, parseInt(qtyInput.value || '1', 10) - 1);
@@ -89,9 +133,16 @@ function renderProduct(product) {
       qtyInput.value = parseInt(qtyInput.value || '1', 10) + 1;
     });
     document.getElementById('add-to-cart-btn').addEventListener('click', () => {
+      if (!ensureSizeSelected()) return;
       const qty = Math.max(1, parseInt(qtyInput.value || '1', 10));
-      addToCart(product, qty);
+      addToCart(product, qty, selectedSize);
       showToast(product.name + ' added to cart');
+    });
+    document.getElementById('buy-now-btn').addEventListener('click', () => {
+      if (!ensureSizeSelected()) return;
+      const qty = Math.max(1, parseInt(qtyInput.value || '1', 10));
+      addToCart(product, qty, selectedSize);
+      window.location.href = 'checkout.html';
     });
   }
 

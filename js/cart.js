@@ -31,12 +31,21 @@ function getCart() {
 function saveCart(cart) {
   localStorage.setItem(CART_KEY, JSON.stringify(cart));
   updateCartBadge();
+  if (typeof updateMiniCartBar === 'function') updateMiniCartBar();
 }
 
-function addToCart(product, qty) {
+// Cart rows are keyed by productId alone, unless a size is involved (only
+// Ready-Made Dresses use sizes) — then productId+size identifies the row,
+// so the same dress in two different sizes lands in two separate rows.
+function cartItemKey(item) {
+  return item.size ? `${item.productId}::${item.size}` : item.productId;
+}
+
+function addToCart(product, qty, size) {
   qty = qty || 1;
   const cart = getCart();
-  const existing = cart.find(item => item.productId === product.id);
+  const key = size ? `${product.id}::${size}` : product.id;
+  const existing = cart.find(item => cartItemKey(item) === key);
   if (existing) {
     existing.qty += qty;
   } else {
@@ -47,22 +56,27 @@ function addToCart(product, qty) {
       qty: qty,
       photo: product.photos && product.photos[0] ? product.photos[0] : '',
       stockStatus: product.stockStatus,
-      attributesSummary: attributesSummary(product.attributes)
+      attributesSummary: attributesSummary(product.attributes),
+      size: size || null
     });
   }
   saveCart(cart);
 }
 
-function setQty(productId, qty) {
+function setQty(key, qty) {
+  if (qty <= 0) {
+    removeFromCart(key);
+    return;
+  }
   const cart = getCart();
-  const item = cart.find(i => i.productId === productId);
+  const item = cart.find(i => cartItemKey(i) === key);
   if (!item) return;
-  item.qty = Math.max(1, qty);
+  item.qty = qty;
   saveCart(cart);
 }
 
-function removeFromCart(productId) {
-  const cart = getCart().filter(i => i.productId !== productId);
+function removeFromCart(key) {
+  const cart = getCart().filter(i => cartItemKey(i) !== key);
   saveCart(cart);
 }
 

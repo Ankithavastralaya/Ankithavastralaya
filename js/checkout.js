@@ -2,12 +2,14 @@
 // Rolando reference site's contact-form pattern of building a plain string,
 // encodeURIComponent-ing it, and opening a URL scheme (mailto -> wa.me here).
 
+import { db } from './firebase-init.js';
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
 const OWNER_WHATSAPP = '918500907070';
 
-// Short human-readable order ID (date + random suffix) so the owner has
-// something to search for later. Phase 1 only puts this in the WhatsApp
-// message text; Phase 2 (Firestore orders collection) will persist it
-// properly so the admin dashboard can look orders up and track status.
+// Short human-readable order ID (date + random suffix) — this is also the
+// Firestore doc ID under /orders, so it's what the admin types into the
+// Orders tab search box later.
 function generateOrderId() {
   const now = new Date();
   const y = String(now.getFullYear()).slice(-2);
@@ -20,7 +22,9 @@ function generateOrderId() {
 function buildOrderMessage(cart, customer, orderId) {
   const lines = ['New Order - Ankitha Vastralaya', `Order ID: ${orderId}`, '', 'Items:'];
   cart.forEach((item, i) => {
-    const attrs = item.attributesSummary ? ` (${item.attributesSummary})` : '';
+    const sizeText = item.size ? `Size: ${item.size}` : '';
+    const attrsList = [sizeText, item.attributesSummary].filter(Boolean).join(', ');
+    const attrs = attrsList ? ` (${attrsList})` : '';
     const tag = item.stockStatus === 'pre_order' ? '[Pre-Order]' : '[In Stock]';
     lines.push(`${i + 1}. ${item.name}${attrs} x${item.qty} - Rs.${item.price} each = Rs.${item.price * item.qty} ${tag}`);
   });
@@ -34,6 +38,26 @@ function buildOrderMessage(cart, customer, orderId) {
 
 function buildWhatsAppUrl(cart, customer, orderId) {
   return `https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent(buildOrderMessage(cart, customer, orderId))}`;
+}
+
+// Best-effort, non-blocking: the WhatsApp message is the real order record
+// either way, this is just a convenience copy so the owner can look orders
+// up by ID later. Deliberately not awaited before window.open() — that
+// must stay synchronous within the click handler or browsers block the
+// popup as not being a direct result of user action.
+async function saveOrderToFirestore(orderId, cart, customer) {
+  try {
+    await setDoc(doc(db, 'orders', orderId), {
+      orderId,
+      items: cart.map(item => ({ name: item.name, qty: item.qty, price: item.price, size: item.size || null })),
+      subtotal: cartTotal(cart),
+      customer,
+      status: 'placed',
+      createdAt: new Date().toISOString()
+    });
+  } catch (e) {
+    console.error('Order record save failed (WhatsApp message already sent, this is just a backup copy):', e);
+  }
 }
 
 function renderOrderSummary(cart) {
@@ -104,8 +128,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!validateForm(customer)) return;
 
     const orderId = generateOrderId();
-    const url = buildWhatsAppUrl(getCart(), customer, orderId);
+    const cartSnapshot = getCart();
+    const url = buildWhatsAppUrl(cartSnapshot, customer, orderId);
     const opened = window.open(url, '_blank', 'noopener');
+    saveOrderToFirestore(orderId, cartSnapshot, customer); // fire-and-forget, see comment above
 
     document.getElementById('checkout-form-panel').style.display = 'none';
     const confirmPanel = document.getElementById('confirm-panel');

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Admin Login — Ankitha Vastralaya</title>
+<link rel="icon" href="../images/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  body{ display:flex; align-items:center; justify-content:center; min-height:100vh; }
+  .login-card{
+    background:var(--white); border:1px solid var(--line); border-radius:var(--radius);
+    padding:40px 32px; width:100%; max-width:360px;
+  }
+  .login-card h1{ font-size:22px; text-align:center; margin-bottom:6px; }
+  .login-card p.sub{ text-align:center; color:var(--text-muted); font-size:13px; margin:0 0 24px; }
+  .login-error{ color:var(--maroon); font-size:13px; margin-top:12px; text-align:center; display:none; }
+  .login-error.show{ display:block; }
+</style>
+</head>
+<body>
+
+<div class="login-card">
+  <a href="../index.html" style="display:flex; justify-content:center; margin-bottom:18px;">
+    <img src="../images/logo.png" alt="Ankitha Vastralaya" style="height:44px;">
+  </a>
+  <h1>Admin Login</h1>
+  <p class="sub">Sign in to manage your store</p>
+  <form id="login-form" novalidate>
+    <div class="field">
+      <label for="f-email">Email</label>
+      <input id="f-email" type="email" required autocomplete="username">
+    </div>
+    <div class="field">
+      <label for="f-password">Password</label>
+      <input id="f-password" type="password" required autocomplete="current-password">
+    </div>
+    <button type="submit" class="btn btn-primary btn-block" id="login-btn">Sign In</button>
+    <p class="login-error" id="login-error"></p>
+  </form>
+</div>
+
+<script type="module" src="js/admin-auth.js"></script>
+</body>
+</html>

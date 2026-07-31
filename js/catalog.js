@@ -2,12 +2,17 @@
 // (full category listing + stock filter). Shared so the card markup and
 // Add-to-Cart wiring only exist in one place.
 
+function productHasSizes(product) {
+  return product.category === 'readymade' && product.sizes && Object.keys(product.sizes).length > 0;
+}
+
 function productCardHTML(product) {
   const badgeLabel = stockBadgeLabel(product.stockStatus);
   const attrs = attributesSummary(product.attributes);
   const photo = product.photos && product.photos[0] ? product.photos[0] : '';
   const priceText = 'Rs. ' + product.price.toLocaleString('en-IN');
   const soldOut = product.stockStatus === 'sold_out';
+  const needsSize = productHasSizes(product);
   return `
     <div class="product-card ${soldOut ? 'sold_out' : ''}">
       <a href="product.html?id=${encodeURIComponent(product.id)}" class="product-card-photo">
@@ -21,8 +26,16 @@ function productCardHTML(product) {
         <div class="product-card-price">${priceText}</div>
         ${soldOut
           ? `<button class="btn btn-ghost btn-small" type="button" disabled>Sold Out</button>`
-          : `<button class="btn btn-primary btn-small btn-add-cart" data-id="${product.id}" type="button">Add to Cart</button>`}
+          : needsSize
+          ? `<div class="product-card-actions">
+              <button class="btn btn-primary btn-small btn-select-size" data-id="${product.id}" type="button">Select Size</button>
+            </div>`
+          : `<div class="product-card-actions">
+              <button class="btn btn-ghost btn-small btn-add-cart" data-id="${product.id}" type="button">Add to Cart</button>
+              <button class="btn btn-primary btn-small btn-buy-now" data-id="${product.id}" type="button">Buy Now</button>
+            </div>`}
       </div>
+      <button class="product-card-quickview" data-id="${product.id}" type="button" aria-label="Quick view">Quick View</button>
     </div>`;
 }
 
@@ -41,6 +54,31 @@ function renderProductGrid(containerId, products) {
       if (!product) return;
       addToCart(product, 1);
       showToast(product.name + ' added to cart');
+    });
+  });
+  container.querySelectorAll('.btn-buy-now').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const product = await DataSource.getProductById(btn.dataset.id);
+      if (!product) return;
+      addToCart(product, 1);
+      window.location.href = 'checkout.html';
+    });
+  });
+  container.querySelectorAll('.btn-select-size').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const product = await DataSource.getProductById(btn.dataset.id);
+      if (!product) return;
+      openQuickView(product);
+    });
+  });
+  container.querySelectorAll('.product-card-quickview').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const product = await DataSource.getProductById(btn.dataset.id);
+      if (!product) return;
+      openQuickView(product);
     });
   });
 }

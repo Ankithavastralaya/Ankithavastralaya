@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Admin Dashboard — Ankitha Vastralaya</title>
+<link rel="icon" href="../images/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="admin-body">
+
+<header class="admin-header">
+  <img src="../images/logo.png" alt="Ankitha Vastralaya">
+  <div class="admin-header-right">
+    <span id="admin-user-email"></span>
+    <button class="btn btn-ghost btn-small" id="logout-btn" type="button">Logout</button>
+  </div>
+</header>
+
+<div class="admin-content">
+  <nav class="admin-tabs">
+    <button class="admin-tab active" data-tab="products" type="button">Products</button>
+    <button class="admin-tab" data-tab="orders" type="button">Orders</button>
+    <button class="admin-tab" data-tab="instagram" type="button">Instagram Videos</button>
+  </nav>
+
+  <!-- ---------- PRODUCTS ---------- -->
+  <section class="admin-panel active" id="panel-products">
+    <div class="admin-panel-head">
+      <h2>Products</h2>
+      <button class="btn btn-primary btn-small" id="add-product-btn" type="button">+ Add Product</button>
+    </div>
+
+    <form class="admin-form" id="product-form" style="display:none;">
+      <h3 id="product-form-title">Add Product</h3>
+      <input type="hidden" id="p-id">
+
+      <div class="admin-form-row">
+        <div class="field">
+          <label for="p-category">Category</label>
+          <select id="p-category" required>
+            <option value="sarees">Sarees</option>
+            <option value="unstitched">Unstitched Dress Materials</option>
+            <option value="readymade">Ready-Made Dresses</option>
+            <option value="jewellery">Jewellery</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="p-price">Price (Rs.)</label>
+          <input id="p-price" type="number" min="0" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="p-name">Product Name</label>
+        <input id="p-name" type="text" required>
+      </div>
+
+      <div class="field">
+        <label for="p-description">Description</label>
+        <textarea id="p-description" rows="3"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Stock Status</label>
+        <div class="admin-radio-row">
+          <label><input type="radio" name="p-stock" value="in_stock" checked> In Stock</label>
+          <label><input type="radio" name="p-stock" value="pre_order"> Pre-Order</label>
+          <label><input type="radio" name="p-stock" value="sold_out"> Sold Out</label>
+        </div>
+      </div>
+
+      <div class="field" id="p-stock-count-field">
+        <label for="p-stock-count">Stock Count</label>
+        <input id="p-stock-count" type="number" min="0">
+      </div>
+
+      <div class="field" id="p-sizes-field" style="display:none;">
+        <label>Sizes (Ready-Made Dresses) — set each size to Not Offered / Available / Out of Stock</label>
+        <div id="p-sizes-editor" class="size-editor"></div>
+      </div>
+
+      <div class="field">
+        <label>Photos (paste image links — upload to GitHub or any image host first, then paste the link here)</label>
+        <div id="p-photos-repeater"></div>
+        <button type="button" class="repeater-add" id="p-photos-add">+ Add another photo link</button>
+      </div>
+
+      <div class="admin-form-row">
+        <div class="field">
+          <label for="p-fabric">Fabric</label>
+          <input id="p-fabric" type="text" list="fabric-list" placeholder="Leave blank if not applicable">
+          <datalist id="fabric-list"></datalist>
+        </div>
+        <div class="field">
+          <label for="p-design">Design</label>
+          <input id="p-design" type="text" list="design-list" placeholder="Leave blank if not applicable">
+          <datalist id="design-list"></datalist>
+        </div>
+      </div>
+      <div class="admin-form-row">
+        <div class="field">
+          <label for="p-weave">Weave Type</label>
+          <input id="p-weave" type="text" list="weave-list" placeholder="Leave blank if not applicable">
+          <datalist id="weave-list"></datalist>
+        </div>
+        <div class="field">
+          <label for="p-loom">Loom Type</label>
+          <input id="p-loom" type="text" list="loom-list" placeholder="Handloom, Powerloom, or leave blank">
+          <datalist id="loom-list"></datalist>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Custom Attributes (anything else — e.g. Blouse Included, Saree Length, Size)</label>
+        <div id="p-custom-repeater"></div>
+        <button type="button" class="repeater-add" id="p-custom-add">+ Add custom attribute</button>
+        <datalist id="custom-key-list"></datalist>
+      </div>
+
+      <div class="field">
+        <label><input type="checkbox" id="p-active" checked style="width:auto; margin-right:6px;"> Active (visible on the storefront)</label>
+      </div>
+
+      <div class="admin-form-actions">
+        <button type="submit" class="btn btn-primary" id="p-save-btn">Save Product</button>
+        <button type="button" class="btn btn-ghost" id="p-cancel-btn">Cancel</button>
+      </div>
+    </form>
+
+    <table class="admin-table" id="products-table">
+      <thead>
+        <tr><th>Photo</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr>
+      </thead>
+      <tbody id="products-tbody"></tbody>
+    </table>
+    <p class="admin-empty-note" id="products-empty" style="display:none;">No products yet — click "Add Product" to create your first one.</p>
+  </section>
+
+  <!-- ---------- ORDERS ---------- -->
+  <section class="admin-panel" id="panel-orders">
+    <div class="admin-panel-head"><h2>Orders</h2></div>
+    <div class="order-lookup">
+      <input type="text" id="order-search-input" placeholder="Enter Order ID, e.g. AV260730-4821">
+      <button class="btn btn-primary btn-small" id="order-search-btn" type="button">Search</button>
+    </div>
+    <div id="order-result"></div>
+  </section>
+
+  <!-- ---------- INSTAGRAM VIDEOS ---------- -->
+  <section class="admin-panel" id="panel-instagram">
+    <div class="admin-panel-head"><h2>Instagram Videos</h2></div>
+    <p class="admin-empty-note" style="padding-top:0;">Paste up to 4 Instagram post/reel links. These show on your home page ("Trending Now") automatically. Leave any blank to show a "coming soon" placeholder instead.</p>
+    <form class="admin-form" id="insta-form">
+      <div class="field"><label for="insta-url-0">Video 1 link</label><input id="insta-url-0" type="url" placeholder="https://www.instagram.com/reel/..."></div>
+      <div class="field"><label for="insta-url-1">Video 2 link</label><input id="insta-url-1" type="url" placeholder="https://www.instagram.com/reel/..."></div>
+      <div class="field"><label for="insta-url-2">Video 3 link</label><input id="insta-url-2" type="url" placeholder="https://www.instagram.com/reel/..."></div>
+      <div class="field"><label for="insta-url-3">Video 4 link</label><input id="insta-url-3" type="url" placeholder="https://www.instagram.com/reel/..."></div>
+      <button type="submit" class="btn btn-primary">Save Links</button>
+    </form>
+  </section>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  document.querySelectorAll('.admin-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+</script>
+<script type="module" src="js/admin-auth.js"></script>
+<script type="module" src="js/admin-products.js"></script>
+<script type="module" src="js/admin-orders.js"></script>
+<script type="module" src="js/admin-instagram.js"></script>
+</body>
+</html>

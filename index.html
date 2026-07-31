@@ -34,6 +34,13 @@
   </div>
 </nav>
 
+<div class="category-strip">
+  <a href="category.html?cat=sarees" class="cat-chip" data-page="sarees">🥻 Sarees</a>
+  <a href="category.html?cat=unstitched" class="cat-chip" data-page="unstitched">🧵 Dress Materials</a>
+  <a href="category.html?cat=readymade" class="cat-chip" data-page="readymade">👗 Ready-Made</a>
+  <a href="category.html?cat=jewellery" class="cat-chip" data-page="jewellery">💍 Jewellery</a>
+</div>
+
 <div class="hero">
   <div class="hero-media">
     <!-- Logo for now. To switch to a photo, replace the img below with:
@@ -46,7 +53,6 @@
 
 <section class="wrap insta-section">
   <div class="section-head">
-    <div class="eyebrow">Instagram</div>
     <h2>Trending Now</h2>
   </div>
   <div class="insta-video-grid" id="insta-video-grid-home"></div>
@@ -96,12 +102,13 @@
 <div id="toast"></div>
 
 <script src="js/cart.js"></script>
+<script src="js/mini-cart-bar.js"></script>
 <script src="js/nav.js"></script>
-<script src="js/data-source.js"></script>
-<script src="js/demo-products.js"></script>
+<script src="js/whatsapp-float.js"></script>
+<script type="module" src="js/data-source.js"></script>
+<script src="js/quickview.js"></script>
 <script src="js/catalog.js"></script>
-<script src="js/instagram-config.js"></script>
-<script src="js/instagram.js"></script>
+<script type="module" src="js/instagram.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => renderInstagramVideos('insta-video-grid-home'));
 </script>

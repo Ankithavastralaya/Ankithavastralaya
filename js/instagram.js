@@ -1,8 +1,12 @@
 // Renders up to 4 Instagram video slots, side by side on desktop and
-// wrapping down to 2/1 columns on smaller screens (see .insta-video-grid).
+// staying side by side (just smaller) on mobile too — see .insta-video-grid.
 // Real videos use Instagram's own oEmbed blockquote + embed.js — the
 // sanctioned way to show a post/reel on an external site. Slots with no
-// URL yet show a placeholder instead.
+// URL yet show a placeholder instead. Links come live from Firestore
+// (meta/instagramVideos), managed from the admin dashboard's Instagram tab.
+
+import { db } from './firebase-init.js';
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 let instagramEmbedScriptRequested = false;
 
@@ -36,12 +40,22 @@ function instaSlotHTML(url, index) {
     </div>`;
 }
 
-function renderInstagramVideos(containerId) {
+async function getInstagramUrls() {
+  try {
+    const snap = await getDoc(doc(db, 'meta', 'instagramVideos'));
+    const urls = snap.exists() ? (snap.data().urls || []) : [];
+    const result = urls.slice(0, 4);
+    while (result.length < 4) result.push(null);
+    return result;
+  } catch (e) {
+    return [null, null, null, null];
+  }
+}
+
+async function renderInstagramVideos(containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
-  const configured = (typeof INSTAGRAM_VIDEO_URLS !== 'undefined' ? INSTAGRAM_VIDEO_URLS : []);
-  const urls = configured.slice(0, 4);
-  while (urls.length < 4) urls.push(null);
+  const urls = await getInstagramUrls();
 
   container.innerHTML = urls.map(instaSlotHTML).join('');
 
@@ -51,3 +65,5 @@ function renderInstagramVideos(containerId) {
     });
   }
 }
+
+window.renderInstagramVideos = renderInstagramVideos;
