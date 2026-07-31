@@ -3,23 +3,26 @@
 // attributes.custom[] list — so any brand-new attribute the admin invents
 // later shows up here automatically with no code change.
 
-const SIZE_ORDER = ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
-
+// sizes is an open-ended array of {label, stock} in the order the owner
+// entered them in the admin — not a fixed S/M/L/XL list, so any custom size
+// name (2XL, 6XL, "Free Size", etc.) just works with no code change.
 function buildSizeChipsHTML(sizes) {
-  if (!sizes) return '';
-  const offered = SIZE_ORDER.filter(s => sizes[s]);
-  if (!offered.length) return '';
+  if (!Array.isArray(sizes) || !sizes.length) return '';
   return `
     <div class="size-selector" id="size-selector">
       <div class="size-selector-label">Select Size</div>
       <div class="size-chip-row">
-        ${offered.map(s => {
-          const outOfStock = sizes[s] === 'out_of_stock';
-          return `<button type="button" class="size-chip ${outOfStock ? 'out-of-stock' : ''}" data-size="${s}" ${outOfStock ? 'disabled' : ''}>${s}</button>`;
+        ${sizes.map(s => {
+          const outOfStock = (Number(s.stock) || 0) <= 0;
+          return `<button type="button" class="size-chip ${outOfStock ? 'out-of-stock' : ''}" data-size="${escapeHtmlAttr(s.label)}" ${outOfStock ? 'disabled' : ''}>${escapeHtmlAttr(s.label)}</button>`;
         }).join('')}
       </div>
       <div class="size-selector-note" id="size-selector-note"></div>
     </div>`;
+}
+
+function escapeHtmlAttr(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
 function buildAttributeRows(attributes) {
@@ -29,6 +32,8 @@ function buildAttributeRows(attributes) {
   if (attributes.design) rows.push(['Design', attributes.design]);
   if (attributes.weave) rows.push(['Weave Type', attributes.weave]);
   if (attributes.loomType) rows.push(['Loom Type', attributes.loomType]);
+  if (attributes.dressMaterialMeters) rows.push(['Dress Material', `${attributes.dressMaterialMeters} m`]);
+  if (attributes.pantMaterialMeters) rows.push(['Pant Material', `${attributes.pantMaterialMeters} m`]);
   (attributes.custom || []).forEach(pair => {
     if (pair.key && pair.value) rows.push([pair.key, pair.value]);
   });

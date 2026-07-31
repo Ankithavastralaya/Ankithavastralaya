@@ -2,23 +2,23 @@
 // customer preview photo, price, attributes and stock without leaving the
 // grid. Modal markup is built on demand and appended once, reused after.
 
-const QV_SIZE_ORDER = ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
-
 function qvSizeChipsHTML(sizes) {
-  if (!sizes) return '';
-  const offered = QV_SIZE_ORDER.filter(s => sizes[s]);
-  if (!offered.length) return '';
+  if (!Array.isArray(sizes) || !sizes.length) return '';
   return `
     <div class="size-selector" id="qv-size-selector">
       <div class="size-selector-label">Select Size</div>
       <div class="size-chip-row">
-        ${offered.map(s => {
-          const outOfStock = sizes[s] === 'out_of_stock';
-          return `<button type="button" class="size-chip ${outOfStock ? 'out-of-stock' : ''}" data-size="${s}" ${outOfStock ? 'disabled' : ''}>${s}</button>`;
+        ${sizes.map(s => {
+          const outOfStock = (Number(s.stock) || 0) <= 0;
+          return `<button type="button" class="size-chip ${outOfStock ? 'out-of-stock' : ''}" data-size="${escapeHtmlAttr(s.label)}" ${outOfStock ? 'disabled' : ''}>${escapeHtmlAttr(s.label)}</button>`;
         }).join('')}
       </div>
       <div class="size-selector-note" id="qv-size-selector-note"></div>
     </div>`;
+}
+
+function escapeHtmlAttr(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
 function qvAttributeRows(attributes) {
@@ -28,6 +28,8 @@ function qvAttributeRows(attributes) {
   if (attributes.design) rows.push(['Design', attributes.design]);
   if (attributes.weave) rows.push(['Weave Type', attributes.weave]);
   if (attributes.loomType) rows.push(['Loom Type', attributes.loomType]);
+  if (attributes.dressMaterialMeters) rows.push(['Dress Material', `${attributes.dressMaterialMeters} m`]);
+  if (attributes.pantMaterialMeters) rows.push(['Pant Material', `${attributes.pantMaterialMeters} m`]);
   (attributes.custom || []).forEach(pair => {
     if (pair.key && pair.value) rows.push([pair.key, pair.value]);
   });

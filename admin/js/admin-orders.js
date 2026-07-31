@@ -63,15 +63,19 @@ function renderOrdersTable(orders) {
     return;
   }
   ordersEmpty.style.display = 'none';
-  ordersTbody.innerHTML = orders.map(o => `
+  ordersTbody.innerHTML = orders.map(o => {
+    const productIds = (o.items || []).map(item => item.productId).filter(Boolean).join(', ');
+    return `
     <tr>
       <td>${escapeHtml(o.id)}</td>
+      <td class="product-id-cell">${escapeHtml(productIds || '—')}</td>
       <td>${escapeHtml((o.customer && o.customer.name) || '')}</td>
       <td>Rs. ${Number(o.subtotal || 0).toLocaleString('en-IN')}</td>
       <td>${STATUS_LABELS[o.status] || 'Placed'}</td>
       <td>${o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN') : '—'}</td>
       <td><button class="btn btn-ghost btn-small view-order-btn" data-id="${o.id}" type="button">View</button></td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 
   ordersTbody.querySelectorAll('.view-order-btn').forEach(btn => {
     btn.addEventListener('click', () => {

@@ -16,6 +16,8 @@ function attributesSummary(attributes) {
   if (attributes.design) parts.push(`Design: ${attributes.design}`);
   if (attributes.weave) parts.push(`Weave: ${attributes.weave}`);
   if (attributes.loomType) parts.push(`Loom: ${attributes.loomType}`);
+  if (attributes.dressMaterialMeters) parts.push(`Dress Material: ${attributes.dressMaterialMeters}m`);
+  if (attributes.pantMaterialMeters) parts.push(`Pant Material: ${attributes.pantMaterialMeters}m`);
   return parts.join(', ');
 }
 

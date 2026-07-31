@@ -17,7 +17,6 @@ const CATEGORY_LABELS = {
   jewellery: 'Jewellery'
 };
 const STOCK_LABELS = { in_stock: 'In Stock', pre_order: 'Pre-Order', sold_out: 'Sold Out' };
-const SIZE_OPTIONS = ['S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
 
 // Short human-readable Product ID (mirrors the Order ID scheme in
 // checkout.js) so the owner has something readable to note down and match
@@ -40,7 +39,10 @@ const stockCountField = document.getElementById('p-stock-count-field');
 const photosRepeater = document.getElementById('p-photos-repeater');
 const customRepeater = document.getElementById('p-custom-repeater');
 const sizesField = document.getElementById('p-sizes-field');
-const sizesEditor = document.getElementById('p-sizes-editor');
+const sizesRepeater = document.getElementById('p-sizes-repeater');
+const metersField = document.getElementById('p-meters-field');
+const dressMetersInput = document.getElementById('p-dress-meters');
+const pantMetersInput = document.getElementById('p-pant-meters');
 const categorySelect = document.getElementById('p-category');
 const productIdInput = document.getElementById('p-custom-id');
 const productModal = document.getElementById('product-modal');
@@ -111,33 +113,47 @@ document.getElementById('p-photos-add').addEventListener('click', () => addPhoto
 document.getElementById('p-custom-add').addEventListener('click', () => addCustomRow());
 
 // ---------- sizes (Ready-Made Dresses only) ----------
+// An open-ended repeater rather than a fixed S/M/L/XL list — the owner can
+// add any size label she needs (2XL, 6XL, "Free Size", waist numbers, etc.)
+// with no code change, same pattern as the photos/custom-attribute repeaters.
+// Order in the array is preserved as the display order on the storefront.
 
-function buildSizesEditor(sizes) {
-  sizes = sizes || {};
-  sizesEditor.innerHTML = SIZE_OPTIONS.map(size => `
-    <div class="size-editor-row">
-      <span class="size-editor-label">${size}</span>
-      <select class="size-editor-select" data-size="${size}">
-        <option value="not_offered">Not Offered</option>
-        <option value="in_stock">Available</option>
-        <option value="out_of_stock">Out of Stock</option>
-      </select>
-    </div>`).join('');
-  SIZE_OPTIONS.forEach(size => {
-    sizesEditor.querySelector(`[data-size="${size}"]`).value = sizes[size] || 'not_offered';
-  });
+function addSizeRow(label, stock) {
+  const row = document.createElement('div');
+  row.className = 'repeater-row';
+  row.innerHTML = `
+    <input type="text" class="p-size-label" list="size-label-list" placeholder="Size (e.g. M, XL, 2XL)" value="${escapeHtml(label || '')}">
+    <input type="number" class="p-size-stock" min="0" placeholder="Stock" value="${stock !== undefined && stock !== null ? stock : ''}">
+    <button type="button" class="repeater-remove" aria-label="Remove">&times;</button>`;
+  row.querySelector('.repeater-remove').addEventListener('click', () => row.remove());
+  sizesRepeater.appendChild(row);
 }
 
+function buildSizesEditor(sizes) {
+  sizesRepeater.innerHTML = '';
+  (sizes || []).forEach(s => addSizeRow(s.label, s.stock));
+  if (!sizes || !sizes.length) addSizeRow();
+}
+
+document.getElementById('p-sizes-add').addEventListener('click', () => addSizeRow());
+
+// Each offered size stores its own stock count — a size is out of stock
+// once its count hits 0, rather than the owner tracking one combined total
+// across every size.
 function readSizesFromEditor() {
-  const sizes = {};
-  sizesEditor.querySelectorAll('.size-editor-select').forEach(sel => {
-    if (sel.value !== 'not_offered') sizes[sel.dataset.size] = sel.value;
+  const sizes = [];
+  sizesRepeater.querySelectorAll('.repeater-row').forEach(row => {
+    const label = row.querySelector('.p-size-label').value.trim();
+    if (!label) return;
+    const stock = Math.max(0, Number(row.querySelector('.p-size-stock').value) || 0);
+    sizes.push({ label, stock });
   });
   return sizes;
 }
 
 function toggleSizesField() {
   sizesField.style.display = categorySelect.value === 'readymade' ? 'block' : 'none';
+  metersField.style.display = categorySelect.value === 'unstitched' ? 'block' : 'none';
 }
 categorySelect.addEventListener('change', toggleSizesField);
 
@@ -237,6 +253,8 @@ function openFormForEdit(product) {
   document.getElementById('p-design').value = attrs.design || '';
   document.getElementById('p-weave').value = attrs.weave || '';
   document.getElementById('p-loom').value = attrs.loomType || '';
+  dressMetersInput.value = attrs.dressMaterialMeters || '';
+  pantMetersInput.value = attrs.pantMaterialMeters || '';
 
   customRepeater.innerHTML = '';
   (attrs.custom || []).forEach(pair => addCustomRow(pair.key, pair.value));
@@ -288,6 +306,12 @@ form.addEventListener('submit', async (e) => {
     }
     if (category === 'readymade') {
       productData.sizes = readSizesFromEditor();
+    }
+    if (category === 'unstitched') {
+      const dressMeters = dressMetersInput.value.trim();
+      const pantMeters = pantMetersInput.value.trim();
+      if (dressMeters) productData.attributes.dressMaterialMeters = dressMeters;
+      if (pantMeters) productData.attributes.pantMaterialMeters = pantMeters;
     }
 
     const existingId = document.getElementById('p-id').value;

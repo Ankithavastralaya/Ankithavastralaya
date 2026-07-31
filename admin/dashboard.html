@@ -88,8 +88,31 @@
       </div>
 
       <div class="field" id="p-sizes-field" style="display:none;">
-        <label>Sizes (Ready-Made Dresses) — set each size to Not Offered / Available / Out of Stock</label>
-        <div id="p-sizes-editor" class="size-editor"></div>
+        <label>Sizes (Ready-Made Dresses) — add each size you offer with its stock count (0 = sold out). Type any size name — the list is just suggestions.</label>
+        <div id="p-sizes-repeater"></div>
+        <button type="button" class="repeater-add" id="p-sizes-add">+ Add a size</button>
+        <datalist id="size-label-list">
+          <option value="S"></option>
+          <option value="M"></option>
+          <option value="L"></option>
+          <option value="XL"></option>
+          <option value="2XL"></option>
+          <option value="3XL"></option>
+          <option value="4XL"></option>
+          <option value="5XL"></option>
+          <option value="6XL"></option>
+        </datalist>
+      </div>
+
+      <div class="admin-form-row" id="p-meters-field" style="display:none;">
+        <div class="field">
+          <label for="p-dress-meters">Dress Material (meters)</label>
+          <input id="p-dress-meters" type="number" step="0.1" min="0" placeholder="e.g. 2.5">
+        </div>
+        <div class="field">
+          <label for="p-pant-meters">Pant Material (meters)</label>
+          <input id="p-pant-meters" type="number" step="0.1" min="0" placeholder="Leave blank if not applicable">
+        </div>
       </div>
 
       <div class="field">
@@ -163,7 +186,7 @@
     <h3 style="margin:28px 0 14px; font-size:16px;">All Orders</h3>
     <table class="admin-table" id="orders-table">
       <thead>
-        <tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Placed</th><th>Actions</th></tr>
+        <tr><th>Order ID</th><th>Product ID(s) — pick from rack</th><th>Customer</th><th>Total</th><th>Status</th><th>Placed</th><th>Actions</th></tr>
       </thead>
       <tbody id="orders-tbody"></tbody>
     </table>

@@ -3,7 +3,7 @@
 // Add-to-Cart wiring only exist in one place.
 
 function productHasSizes(product) {
-  return product.category === 'readymade' && product.sizes && Object.keys(product.sizes).length > 0;
+  return product.category === 'readymade' && Array.isArray(product.sizes) && product.sizes.length > 0;
 }
 
 function productCardHTML(product) {
@@ -26,10 +26,6 @@ function productCardHTML(product) {
         <div class="product-card-price">${priceText}</div>
         ${soldOut
           ? `<button class="btn btn-ghost btn-small" type="button" disabled>Sold Out</button>`
-          : needsSize
-          ? `<div class="product-card-actions">
-              <button class="btn btn-primary btn-small btn-select-size" data-id="${product.id}" type="button">Select Size</button>
-            </div>`
           : `<div class="product-card-actions">
               <button class="btn btn-ghost btn-small btn-add-cart" data-id="${product.id}" type="button">Add to Cart</button>
               <button class="btn btn-primary btn-small btn-buy-now" data-id="${product.id}" type="button">Buy Now</button>
@@ -52,6 +48,13 @@ function renderProductGrid(containerId, products) {
       e.preventDefault();
       const product = await DataSource.getProductById(btn.dataset.id);
       if (!product) return;
+      // Products with sizes (Ready-Made) can't be added straight from the
+      // compact grid card — send them to Quick View, which has the size
+      // picker and its own Add to Cart, instead of guessing a size.
+      if (productHasSizes(product)) {
+        openQuickView(product);
+        return;
+      }
       addToCart(product, 1);
       showToast(product.name + ' added to cart');
     });
@@ -61,16 +64,12 @@ function renderProductGrid(containerId, products) {
       e.preventDefault();
       const product = await DataSource.getProductById(btn.dataset.id);
       if (!product) return;
+      if (productHasSizes(product)) {
+        openQuickView(product);
+        return;
+      }
       addToCart(product, 1);
       window.location.href = 'checkout.html';
-    });
-  });
-  container.querySelectorAll('.btn-select-size').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      const product = await DataSource.getProductById(btn.dataset.id);
-      if (!product) return;
-      openQuickView(product);
     });
   });
   container.querySelectorAll('.product-card-quickview').forEach(btn => {
