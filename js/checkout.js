@@ -22,8 +22,9 @@ function generateOrderId() {
 function buildOrderMessage(cart, customer, orderId) {
   const lines = ['New Order - Ankitha Vastralaya', `Order ID: ${orderId}`, '', 'Items:'];
   cart.forEach((item, i) => {
+    const idText = item.productId ? `Product ID: ${item.productId}` : '';
     const sizeText = item.size ? `Size: ${item.size}` : '';
-    const attrsList = [sizeText, item.attributesSummary].filter(Boolean).join(', ');
+    const attrsList = [idText, sizeText, item.attributesSummary].filter(Boolean).join(', ');
     const attrs = attrsList ? ` (${attrsList})` : '';
     const tag = item.stockStatus === 'pre_order' ? '[Pre-Order]' : '[In Stock]';
     lines.push(`${i + 1}. ${item.name}${attrs} x${item.qty} - Rs.${item.price} each = Rs.${item.price * item.qty} ${tag}`);

@@ -464,4 +464,5 @@ body.admin-modal-lock{ overflow:hidden; }
   background:var(--white); cursor:pointer; text-transform:uppercase; letter-spacing:0.03em;
 }
 .order-status-btn.active{ background:var(--maroon); color:var(--white); border-color:var(--maroon); }
+.dispatch-form{ margin-top:16px; padding-top:16px; border-top:1px solid var(--line); max-width:360px; }
 .admin-empty-note{ color:var(--text-muted); font-size:13.5px; padding:20px 0; }

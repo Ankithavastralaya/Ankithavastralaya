@@ -1,23 +1,89 @@
-// Orders tab: look up a single order by its Order ID (which is also the
-// Firestore doc ID — see checkout.js/generateOrderId()), view its details,
-// and update its status as it moves through fulfillment.
+// Orders tab: browse every order in a table, look up a single order by its
+// Order ID (which is also the Firestore doc ID — see
+// checkout.js/generateOrderId()), view its details, and update its status
+// as it moves through fulfillment. Marking an order "Dispatched" requires a
+// courier name + tracking ID, and immediately opens a pre-filled WhatsApp
+// chat to the customer's own number with the dispatch details — same
+// tap-to-send pattern as the customer's own order message in checkout.js,
+// since there's no paid WhatsApp Business API here to send it silently.
 
 import { db } from '../../js/firebase-init.js';
-import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { collection, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const STATUSES = [
   { value: 'placed', label: 'Placed' },
   { value: 'dispatched', label: 'Dispatched' },
   { value: 'delivered', label: 'Delivered' }
 ];
+const STATUS_LABELS = { placed: 'Placed', dispatched: 'Dispatched', delivered: 'Delivered' };
 
 const searchInput = document.getElementById('order-search-input');
 const searchBtn = document.getElementById('order-search-btn');
 const resultEl = document.getElementById('order-result');
+const ordersTbody = document.getElementById('orders-tbody');
+const ordersEmpty = document.getElementById('orders-empty');
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
+
+// Builds a wa.me link straight to the customer's own number (as opposed to
+// checkout.js's OWNER_WHATSAPP) — assumes a plain 10-digit Indian mobile
+// number as collected at checkout, prefixing the country code.
+function customerWhatsAppUrl(phone, message) {
+  const digits = String(phone || '').replace(/\D/g, '');
+  const withCountryCode = digits.length === 10 ? `91${digits}` : digits;
+  return `https://wa.me/${withCountryCode}?text=${encodeURIComponent(message)}`;
+}
+
+function buildDispatchMessage(orderId, customerName, courier, trackingId) {
+  return [
+    `Hi ${customerName}, your order ${orderId} from Ankitha Vastralaya has been dispatched!`,
+    '',
+    `Courier: ${courier}`,
+    `Tracking ID: ${trackingId}`,
+    '',
+    'Thank you for shopping with us!'
+  ].join('\n');
+}
+
+// ---------- all-orders table ----------
+
+async function loadAllOrders() {
+  const snap = await getDocs(collection(db, 'orders'));
+  const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  renderOrdersTable(orders);
+}
+
+function renderOrdersTable(orders) {
+  if (!orders.length) {
+    ordersTbody.innerHTML = '';
+    ordersEmpty.style.display = 'block';
+    return;
+  }
+  ordersEmpty.style.display = 'none';
+  ordersTbody.innerHTML = orders.map(o => `
+    <tr>
+      <td>${escapeHtml(o.id)}</td>
+      <td>${escapeHtml((o.customer && o.customer.name) || '')}</td>
+      <td>Rs. ${Number(o.subtotal || 0).toLocaleString('en-IN')}</td>
+      <td>${STATUS_LABELS[o.status] || 'Placed'}</td>
+      <td>${o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN') : '—'}</td>
+      <td><button class="btn btn-ghost btn-small view-order-btn" data-id="${o.id}" type="button">View</button></td>
+    </tr>`).join('');
+
+  ordersTbody.querySelectorAll('.view-order-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const order = orders.find(o => o.id === btn.dataset.id);
+      searchInput.value = order.id;
+      renderOrder(order.id, order);
+      resultEl.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+}
+
+// ---------- single order lookup + detail ----------
 
 async function searchOrder() {
   const orderId = searchInput.value.trim();
@@ -31,8 +97,7 @@ async function searchOrder() {
     return;
   }
 
-  const order = snap.data();
-  renderOrder(orderId, order);
+  renderOrder(orderId, snap.data());
 }
 
 function renderOrder(orderId, order) {
@@ -70,15 +135,55 @@ function renderOrder(orderId, order) {
       <div class="order-status-row" id="order-status-row">
         ${STATUSES.map(s => `<button type="button" class="order-status-btn ${order.status === s.value ? 'active' : ''}" data-status="${s.value}">${s.label}</button>`).join('')}
       </div>
+
+      <div class="dispatch-form" id="dispatch-form" style="display:${order.status === 'dispatched' ? 'block' : 'none'};">
+        <div class="field">
+          <label for="dispatch-courier">Courier Service</label>
+          <input id="dispatch-courier" type="text" placeholder="e.g. Delhivery, DTDC, India Post" value="${escapeHtml(order.courierService || '')}">
+        </div>
+        <div class="field">
+          <label for="dispatch-tracking">Tracking ID</label>
+          <input id="dispatch-tracking" type="text" placeholder="Tracking number" value="${escapeHtml(order.trackingId || '')}">
+        </div>
+        <button class="btn btn-primary btn-small" id="dispatch-confirm-btn" type="button">${order.courierService ? 'Update & Notify Customer' : 'Confirm Dispatch & Notify Customer'}</button>
+      </div>
     </div>`;
 
   resultEl.querySelectorAll('.order-status-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
+      if (btn.dataset.status === 'dispatched') {
+        // Dispatched always goes through the courier/tracking form below —
+        // it's never a plain one-click status change.
+        const form = document.getElementById('dispatch-form');
+        form.style.display = 'block';
+        document.getElementById('dispatch-courier').focus();
+        return;
+      }
       await updateDoc(doc(db, 'orders', orderId), { status: btn.dataset.status });
-      resultEl.querySelectorAll('.order-status-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
       showToast('Status updated to ' + btn.textContent);
+      renderOrder(orderId, { ...order, status: btn.dataset.status });
+      loadAllOrders();
     });
+  });
+
+  const confirmBtn = document.getElementById('dispatch-confirm-btn');
+  confirmBtn.addEventListener('click', async () => {
+    const courier = document.getElementById('dispatch-courier').value.trim();
+    const trackingId = document.getElementById('dispatch-tracking').value.trim();
+    if (!courier || !trackingId) {
+      showToast('Enter both courier service and tracking ID');
+      return;
+    }
+
+    const updates = { status: 'dispatched', courierService: courier, trackingId, dispatchedAt: new Date().toISOString() };
+    await updateDoc(doc(db, 'orders', orderId), updates);
+
+    const message = buildDispatchMessage(orderId, customer.name || 'there', courier, trackingId);
+    window.open(customerWhatsAppUrl(customer.phone, message), '_blank', 'noopener');
+
+    showToast('Order marked dispatched — WhatsApp opened to notify the customer');
+    renderOrder(orderId, { ...order, ...updates });
+    loadAllOrders();
   });
 }
 
@@ -92,3 +197,5 @@ function showToast(msg) {
 
 searchBtn.addEventListener('click', searchOrder);
 searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') searchOrder(); });
+
+document.addEventListener('DOMContentLoaded', loadAllOrders);
