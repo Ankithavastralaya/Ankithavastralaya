@@ -4,7 +4,7 @@
 
 function highlightActiveNav() {
   const currentPage = document.body.dataset.page;
-  document.querySelectorAll('.nav-links a[data-page], .cat-chip[data-page]').forEach(a => {
+  document.querySelectorAll('.nav-links a[data-page]').forEach(a => {
     a.classList.toggle('active', currentPage && a.dataset.page === currentPage);
   });
 }
