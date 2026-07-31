@@ -7,7 +7,7 @@
 
 import { db } from '../../js/firebase-init.js';
 import {
-  collection, getDocs, doc, setDoc, updateDoc, arrayUnion
+  collection, getDocs, getDoc, doc, setDoc, updateDoc, arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const CATEGORY_LABELS = {
@@ -42,6 +42,7 @@ const customRepeater = document.getElementById('p-custom-repeater');
 const sizesField = document.getElementById('p-sizes-field');
 const sizesEditor = document.getElementById('p-sizes-editor');
 const categorySelect = document.getElementById('p-category');
+const productIdInput = document.getElementById('p-custom-id');
 const productModal = document.getElementById('product-modal');
 
 // Add/Edit opens as an overlay modal (rather than expanding inline above the
@@ -193,6 +194,8 @@ function renderProductsTable() {
 function resetForm() {
   form.reset();
   document.getElementById('p-id').value = '';
+  productIdInput.disabled = false;
+  productIdInput.value = '';
   photosRepeater.innerHTML = '';
   customRepeater.innerHTML = '';
   addPhotoRow();
@@ -214,6 +217,8 @@ function openFormForEdit(product) {
   resetForm();
   formTitle.textContent = 'Edit Product';
   document.getElementById('p-id').value = product.id;
+  productIdInput.value = product.id;
+  productIdInput.disabled = true;
   document.getElementById('p-category').value = product.category || 'sarees';
   document.getElementById('p-price').value = product.price || 0;
   document.getElementById('p-name').value = product.name || '';
@@ -289,8 +294,20 @@ form.addEventListener('submit', async (e) => {
     if (existingId) {
       await setDoc(doc(db, 'products', existingId), productData, { merge: true });
     } else {
+      const customId = productIdInput.value.trim();
+      if (customId) {
+        if (customId.includes('/') || customId === '.' || customId === '..') {
+          showToast('Product ID can\'t contain "/" or be "." or ".."');
+          return;
+        }
+        const clash = await getDoc(doc(db, 'products', customId));
+        if (clash.exists()) {
+          showToast('That Product ID is already in use — pick a different one.');
+          return;
+        }
+      }
       productData.createdAt = new Date().toISOString();
-      await setDoc(doc(db, 'products', generateProductId()), productData);
+      await setDoc(doc(db, 'products', customId || generateProductId()), productData);
     }
 
     // Feed the datalists for next time — arrayUnion is idempotent, safe to

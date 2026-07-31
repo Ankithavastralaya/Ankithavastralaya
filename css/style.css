@@ -303,6 +303,7 @@ body.quickview-lock{ overflow:hidden; }
   border:1px solid var(--line); border-radius:var(--radius); background:var(--white); color:var(--ink);
 }
 .field input:focus, .field textarea:focus{ outline:2px solid var(--gold); outline-offset:1px; }
+.field input:disabled{ background:var(--cream-2); color:var(--text-muted); cursor:not-allowed; }
 .field-error{ color:var(--maroon); font-size:12px; margin-top:5px; display:none; }
 .field.invalid input, .field.invalid textarea{ border-color:var(--maroon); }
 .field.invalid .field-error{ display:block; }
