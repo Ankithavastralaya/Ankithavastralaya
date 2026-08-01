@@ -34,8 +34,12 @@ function instaSlotHTML(url, index) {
         <span>Video ${index + 1} coming soon</span>
       </div>`;
   }
+  // Instagram's embed script resizes this blockquote into an iframe with
+  // its own height (based on the real post's aspect ratio) after embed.js
+  // runs — the slot can't force a fixed aspect-ratio/overflow:hidden like
+  // the placeholder does, or it clips the embed and breaks its play button.
   return `
-    <div class="insta-video-slot">
+    <div class="insta-video-slot has-video">
       <blockquote class="instagram-media" data-instgrm-permalink="${url}" data-instgrm-version="14" style="margin:0;"></blockquote>
     </div>`;
 }

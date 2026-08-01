@@ -1,36 +1,39 @@
 // Renders product grids for both index.html (featured) and category.html
-// (full category listing + stock filter). Shared so the card markup and
-// Add-to-Cart wiring only exist in one place.
+// (full category listing + stock filter). Cards are photo-first, with a
+// wishlist heart over the photo and small text-style Add to Cart/Buy Now
+// links under the price — deliberately understated next to the photo.
 
 function productHasSizes(product) {
   return product.category === 'readymade' && normalizeSizes(product.sizes).length > 0;
 }
 
+const WISHLIST_HEART_SVG = `<svg viewBox="0 0 24 24"><path d="M20.8 4.6c-1.8-1.8-4.7-1.8-6.5 0L12 6.9l-2.3-2.3c-1.8-1.8-4.7-1.8-6.5 0-1.8 1.8-1.8 4.7 0 6.5L12 20.8l8.8-8.8c1.8-1.8 1.8-4.7 0-6.5z"/></svg>`;
+
 function productCardHTML(product) {
   const badgeLabel = stockBadgeLabel(product.stockStatus);
-  const attrs = attributesSummary(product.attributes);
   const photo = product.photos && product.photos[0] ? product.photos[0] : '';
   const priceText = 'Rs. ' + product.price.toLocaleString('en-IN');
+  const design = product.attributes && product.attributes.design ? product.attributes.design : '';
   const soldOut = product.stockStatus === 'sold_out';
-  const needsSize = productHasSizes(product);
+  const wished = isWishlisted(product.id);
   return `
     <div class="product-card ${soldOut ? 'sold_out' : ''}">
       <a href="product.html?id=${encodeURIComponent(product.id)}" class="product-card-photo">
         <img src="${photo}" alt="${product.name}" loading="lazy">
         <span class="stock-badge ${product.stockStatus}">${badgeLabel}</span>
+        <button class="wishlist-btn ${wished ? 'active' : ''}" data-id="${product.id}" type="button" aria-label="${wished ? 'Remove from wishlist' : 'Add to wishlist'}">${WISHLIST_HEART_SVG}</button>
         <button class="product-card-quickview" data-id="${product.id}" type="button" aria-label="Quick view">Quick View</button>
       </a>
       <div class="product-card-body">
-        <div class="product-card-cat">${DataSource.categoryLabel(product.category)}</div>
         <a href="product.html?id=${encodeURIComponent(product.id)}"><h3 class="product-card-name">${product.name}</h3></a>
-        ${attrs ? `<div class="product-card-attrs">${attrs}</div>` : ''}
+        ${design ? `<div class="product-card-design">${design}</div>` : ''}
+        <div class="product-card-divider"></div>
         <div class="product-card-price">${priceText}</div>
-        <div class="product-card-actions">
-          ${soldOut
-            ? `<button class="btn btn-ghost btn-small" type="button" disabled>Sold Out</button>`
-            : `<button class="btn btn-ghost btn-small btn-add-cart" data-id="${product.id}" type="button">Add to Cart</button>
-              <button class="btn btn-gold btn-small btn-buy-now" data-id="${product.id}" type="button">Buy Now</button>`}
-        </div>
+        ${!soldOut ? `
+        <div class="product-card-mini-actions">
+          <button class="mini-action btn-add-cart" data-id="${product.id}" type="button">Add to Cart</button>
+          <button class="mini-action mini-action-buy btn-buy-now" data-id="${product.id}" type="button">Buy Now</button>
+        </div>` : ''}
       </div>
     </div>`;
 }
@@ -43,9 +46,22 @@ function renderProductGrid(containerId, products) {
     return;
   }
   container.innerHTML = products.map(productCardHTML).join('');
+
+  container.querySelectorAll('.wishlist-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const active = toggleWishlist(btn.dataset.id);
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-label', active ? 'Remove from wishlist' : 'Add to wishlist');
+      showToast(active ? 'Added to Wishlist' : 'Removed from Wishlist');
+    });
+  });
+
   container.querySelectorAll('.btn-add-cart').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.preventDefault();
+      e.stopPropagation();
       const product = await DataSource.getProductById(btn.dataset.id);
       if (!product) return;
       // Products with sizes (Ready-Made) can't be added straight from the
@@ -62,6 +78,7 @@ function renderProductGrid(containerId, products) {
   container.querySelectorAll('.btn-buy-now').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.preventDefault();
+      e.stopPropagation();
       const product = await DataSource.getProductById(btn.dataset.id);
       if (!product) return;
       if (productHasSizes(product)) {

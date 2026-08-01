@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Checkout — Ankitha Vastralaya</title>
+<title>Your Wishlist — Ankitha Vastralaya</title>
 <link rel="icon" href="hero-images/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@300;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -29,7 +29,7 @@
           WhatsApp: 85009 07070
         </a>
       </div>
-      <a href="wishlist.html" class="nav-wishlist" aria-label="Wishlist">
+      <a href="wishlist.html" class="nav-wishlist active" aria-label="Wishlist">
         <svg viewBox="0 0 24 24"><path d="M20.8 4.6c-1.8-1.8-4.7-1.8-6.5 0L12 6.9l-2.3-2.3c-1.8-1.8-4.7-1.8-6.5 0-1.8 1.8-1.8 4.7 0 6.5L12 20.8l8.8-8.8c1.8-1.8 1.8-4.7 0-6.5z"/></svg>
         <span class="cart-badge hidden" id="wishlist-badge">0</span>
       </a>
@@ -44,68 +44,10 @@
 
 <section class="wrap">
   <div class="section-head">
-    <div class="eyebrow">Almost there</div>
-    <h2>Checkout</h2>
+    <div class="eyebrow">Saved for later</div>
+    <h2>Your Wishlist</h2>
   </div>
-  <div id="checkout-root">
-    <div class="checkout-grid" id="checkout-form-panel">
-      <div>
-        <div class="checkout-note">
-          No online payment here — after you place your order via WhatsApp, we'll reply in the same chat with our UPI QR code and the final bill amount. No returns/replacements and no COD on orders.
-        </div>
-        <form id="checkout-form" novalidate>
-          <div class="field" data-field="name">
-            <label for="f-name">Name <span class="required">*</span></label>
-            <input id="f-name" type="text" required>
-            <div class="field-error"></div>
-          </div>
-          <div class="field" data-field="phone">
-            <label for="f-phone">Phone <span class="required">*</span></label>
-            <input id="f-phone" type="tel" required>
-            <div class="field-error"></div>
-          </div>
-          <div class="field" data-field="address">
-            <label for="f-address">Address <span class="required">*</span></label>
-            <textarea id="f-address" rows="3" required></textarea>
-            <div class="field-error"></div>
-          </div>
-          <div class="field" data-field="pincode">
-            <label for="f-pincode">Pincode <span class="required">*</span></label>
-            <input id="f-pincode" type="text" inputmode="numeric" maxlength="6" required>
-            <div class="field-error"></div>
-          </div>
-          <div class="field" data-field="city">
-            <label for="f-city">City <span class="required">*</span></label>
-            <input id="f-city" type="text" required>
-            <div class="field-error"></div>
-          </div>
-          <div class="field">
-            <label for="f-notes">Notes (optional)</label>
-            <textarea id="f-notes" rows="2" placeholder="Any special request (e.g. blouse stitching, gift wrap)"></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary btn-block">Place Order via WhatsApp</button>
-        </form>
-      </div>
-      <div class="order-summary">
-        <h3 style="margin-bottom:14px;">Order Summary</h3>
-        <div id="order-summary-items"></div>
-        <div class="order-summary-total">
-          <span>Total</span>
-          <span id="order-summary-total-value"></span>
-        </div>
-      </div>
-    </div>
-
-    <div class="confirm-panel" id="confirm-panel" style="display:none;">
-      <h2>Order sent!</h2>
-      <p>Your Order ID is <b id="confirm-order-id"></b> — keep it handy in case you need to follow up with us.</p>
-      <p>A WhatsApp chat should have opened with your order details filled in — just tap <b>Send</b> there to confirm your order. We'll reply in that same chat with our payment QR code and final bill amount.</p>
-      <a href="#" id="confirm-wa-link" class="btn btn-gold" target="_blank" rel="noopener">Open WhatsApp Again</a>
-      <p id="confirm-fallback-note" style="display:none; color:var(--maroon); margin-top:16px;">
-        It looks like your browser blocked the WhatsApp pop-up — tap the button above to open it manually.
-      </p>
-    </div>
-  </div>
+  <div id="wishlist-root"></div>
 </section>
 
 <footer>
@@ -123,6 +65,8 @@
 <script src="js/wishlist.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/whatsapp-float.js"></script>
-<script type="module" src="js/checkout.js"></script>
+<script type="module" src="js/data-source.js"></script>
+<script src="js/quickview.js"></script>
+<script src="js/wishlist-page.js"></script>
 </body>
 </html>

@@ -9,8 +9,11 @@ function qvSizeChipsHTML(sizes) {
       <div class="size-selector-label">Select Size</div>
       <div class="size-chip-row">
         ${sizes.map(s => {
-          const outOfStock = (Number(s.stock) || 0) <= 0;
-          return `<button type="button" class="size-chip ${outOfStock ? 'out-of-stock' : ''}" data-size="${escapeHtmlAttr(s.label)}" ${outOfStock ? 'disabled' : ''}>${escapeHtmlAttr(s.label)}</button>`;
+          const status = s.status || ((Number(s.stock) || 0) > 0 ? 'in_stock' : 'sold_out');
+          const soldOut = status === 'sold_out';
+          const preOrder = status === 'pre_order';
+          const cls = [soldOut ? 'out-of-stock' : '', preOrder ? 'pre-order' : ''].filter(Boolean).join(' ');
+          return `<button type="button" class="size-chip ${cls}" data-size="${escapeHtmlAttr(s.label)}" ${soldOut ? 'disabled' : ''}>${escapeHtmlAttr(s.label)}${preOrder ? ' <span class="size-chip-tag">Pre-Order</span>' : ''}</button>`;
         }).join('')}
       </div>
       <div class="size-selector-note" id="qv-size-selector-note"></div>
@@ -24,6 +27,7 @@ function escapeHtmlAttr(s) {
 function qvAttributeRows(attributes) {
   if (!attributes) return [];
   const rows = [];
+  if (attributes.subCategory) rows.push(['Sub-Category', attributes.subCategory]);
   if (attributes.fabric) rows.push(['Fabric', attributes.fabric]);
   if (attributes.design) rows.push(['Design', attributes.design]);
   if (attributes.weave) rows.push(['Weave Type', attributes.weave]);

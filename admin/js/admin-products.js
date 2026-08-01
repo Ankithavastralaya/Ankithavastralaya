@@ -70,6 +70,7 @@ async function loadMetaSuggestions() {
   const snap = await getDocs(collection(db, 'meta'));
   const metaDoc = snap.docs.find(d => d.id === 'attributeSuggestions');
   const data = metaDoc ? metaDoc.data() : {};
+  fillDatalist('subcategory-list', data.subCategory);
   fillDatalist('fabric-list', data.fabric);
   fillDatalist('design-list', data.design);
   fillDatalist('weave-list', data.weave);
@@ -118,50 +119,73 @@ document.getElementById('p-custom-add').addEventListener('click', () => addCusto
 // with no code change, same pattern as the photos/custom-attribute repeaters.
 // Order in the array is preserved as the display order on the storefront.
 
-function addSizeRow(label, stock) {
+function addSizeRow(label, stock, status) {
   const row = document.createElement('div');
   row.className = 'repeater-row';
+  const rowStatus = status || (Number(stock) > 0 ? 'in_stock' : 'sold_out');
   row.innerHTML = `
     <input type="text" class="p-size-label" list="size-label-list" placeholder="Size (e.g. M, XL, 2XL)" value="${escapeHtml(label || '')}">
-    <input type="number" class="p-size-stock" min="0" placeholder="Stock" value="${stock !== undefined && stock !== null ? stock : ''}">
+    <select class="p-size-status">
+      <option value="in_stock" ${rowStatus === 'in_stock' ? 'selected' : ''}>In Stock</option>
+      <option value="pre_order" ${rowStatus === 'pre_order' ? 'selected' : ''}>Pre-Order</option>
+      <option value="sold_out" ${rowStatus === 'sold_out' ? 'selected' : ''}>Sold Out</option>
+    </select>
+    <input type="number" class="p-size-stock" min="0" placeholder="Stock" value="${stock !== undefined && stock !== null ? stock : ''}" style="${rowStatus === 'in_stock' ? '' : 'display:none;'}">
     <button type="button" class="repeater-remove" aria-label="Remove">&times;</button>`;
+  const statusSelect = row.querySelector('.p-size-status');
+  const stockInput = row.querySelector('.p-size-stock');
+  statusSelect.addEventListener('change', () => {
+    stockInput.style.display = statusSelect.value === 'in_stock' ? '' : 'none';
+  });
   row.querySelector('.repeater-remove').addEventListener('click', () => row.remove());
   sizesRepeater.appendChild(row);
 }
 
 // Handles products saved under earlier schema versions too: oldest was
-// {LABEL: 'in_stock'|'out_of_stock'}, then {LABEL: {stock: N}} — so editing
-// a product added before the size repeater existed still populates
-// correctly instead of erroring out.
+// {LABEL: 'in_stock'|'out_of_stock'}, then {LABEL: {stock: N}}, then
+// [{label, stock}] with no explicit status — so editing a product added
+// before per-size status existed still populates correctly instead of
+// erroring out (status is inferred from stock when missing).
 function normalizeSizesForEditor(sizes) {
   if (!sizes) return [];
-  if (Array.isArray(sizes)) return sizes;
+  if (Array.isArray(sizes)) {
+    return sizes.map(s => ({
+      label: s.label,
+      stock: Number(s.stock) || 0,
+      status: s.status || (Number(s.stock) > 0 ? 'in_stock' : 'sold_out')
+    }));
+  }
   return Object.keys(sizes).map(label => {
     const val = sizes[label];
-    if (val && typeof val === 'object') return { label, stock: Number(val.stock) || 0 };
-    return { label, stock: val === 'out_of_stock' ? 0 : 1 };
+    if (val && typeof val === 'object') {
+      const stock = Number(val.stock) || 0;
+      return { label, stock, status: val.status || (stock > 0 ? 'in_stock' : 'sold_out') };
+    }
+    const stock = val === 'out_of_stock' ? 0 : 1;
+    return { label, stock, status: stock > 0 ? 'in_stock' : 'sold_out' };
   });
 }
 
 function buildSizesEditor(sizes) {
   sizesRepeater.innerHTML = '';
   const list = normalizeSizesForEditor(sizes);
-  list.forEach(s => addSizeRow(s.label, s.stock));
+  list.forEach(s => addSizeRow(s.label, s.stock, s.status));
   if (!list.length) addSizeRow();
 }
 
 document.getElementById('p-sizes-add').addEventListener('click', () => addSizeRow());
 
-// Each offered size stores its own stock count — a size is out of stock
-// once its count hits 0, rather than the owner tracking one combined total
-// across every size.
+// Each offered size has its own status (In Stock/Pre-Order/Sold Out), same
+// three states as the overall product — the stock count only matters (and
+// is only shown) while a size is In Stock.
 function readSizesFromEditor() {
   const sizes = [];
   sizesRepeater.querySelectorAll('.repeater-row').forEach(row => {
     const label = row.querySelector('.p-size-label').value.trim();
     if (!label) return;
-    const stock = Math.max(0, Number(row.querySelector('.p-size-stock').value) || 0);
-    sizes.push({ label, stock });
+    const status = row.querySelector('.p-size-status').value;
+    const stock = status === 'in_stock' ? Math.max(0, Number(row.querySelector('.p-size-stock').value) || 0) : 0;
+    sizes.push({ label, stock, status });
   });
   return sizes;
 }
@@ -278,6 +302,7 @@ function openFormForEdit(product) {
   photos.forEach(url => addPhotoRow(url));
 
   const attrs = product.attributes || {};
+  document.getElementById('p-subcategory').value = attrs.subCategory || '';
   document.getElementById('p-fabric').value = attrs.fabric || '';
   document.getElementById('p-design').value = attrs.design || '';
   document.getElementById('p-weave').value = attrs.weave || '';
@@ -312,6 +337,7 @@ form.addEventListener('submit', async (e) => {
       if (key && value) customPairs.push({ key, value });
     });
 
+    const subCategory = document.getElementById('p-subcategory').value.trim();
     const fabric = document.getElementById('p-fabric').value.trim();
     const design = document.getElementById('p-design').value.trim();
     const weave = document.getElementById('p-weave').value.trim();
@@ -327,7 +353,7 @@ form.addEventListener('submit', async (e) => {
       photos,
       stockStatus,
       active: document.getElementById('p-active').checked,
-      attributes: { fabric, design, weave, loomType, custom: customPairs },
+      attributes: { subCategory, fabric, design, weave, loomType, custom: customPairs },
       updatedAt: new Date().toISOString()
     };
     if (stockStatus === 'in_stock') {
@@ -366,6 +392,7 @@ form.addEventListener('submit', async (e) => {
     // Feed the datalists for next time — arrayUnion is idempotent, safe to
     // call even when nothing actually changed.
     const metaUpdate = {};
+    if (subCategory) metaUpdate.subCategory = arrayUnion(subCategory);
     if (fabric) metaUpdate.fabric = arrayUnion(fabric);
     if (design) metaUpdate.design = arrayUnion(design);
     if (weave) metaUpdate.weave = arrayUnion(weave);
