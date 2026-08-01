@@ -57,7 +57,7 @@
   </div>
 </section>
 
-<section class="wrap">
+<section class="wrap cat-section">
   <div class="section-head">
     <div class="eyebrow">Shop by category</div>
   </div>
@@ -108,9 +108,15 @@
 </section>
 
 <section class="wrap">
-  <div class="section-head">
-    <div class="eyebrow">New &amp; featured</div>
-    <h2>Latest Arrivals</h2>
+  <div class="section-head grid-toggle-head">
+    <div class="grid-view-toggle" id="grid-view-toggle">
+      <button type="button" class="grid-view-btn active" data-mode="4" aria-label="Show 4 products per row">
+        <svg viewBox="0 0 20 20" fill="currentColor"><rect x="0.5" y="1" width="3" height="18" rx="1"/><rect x="5.7" y="1" width="3" height="18" rx="1"/><rect x="10.9" y="1" width="3" height="18" rx="1"/><rect x="16.1" y="1" width="3" height="18" rx="1"/></svg>
+      </button>
+      <button type="button" class="grid-view-btn" data-mode="2" aria-label="Show 2 products per row">
+        <svg viewBox="0 0 20 20" fill="currentColor"><rect x="1" y="1" width="8" height="18" rx="1"/><rect x="11" y="1" width="8" height="18" rx="1"/></svg>
+      </button>
+    </div>
   </div>
   <div class="product-grid hscroll-products" id="featured-grid"></div>
 </section>

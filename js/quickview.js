@@ -74,7 +74,7 @@ function openQuickView(product) {
   const priceText = 'Rs. ' + product.price.toLocaleString('en-IN');
   const attrRows = qvAttributeRows(product.attributes);
   const photo = product.photos && product.photos[0] ? product.photos[0] : '';
-  const sizeChipsHTML = product.category === 'readymade' ? qvSizeChipsHTML(normalizeSizes(product.sizes)) : '';
+  const sizeChipsHTML = product.category === 'readymade' ? qvSizeChipsHTML(sortSizesCanonical(normalizeSizes(product.sizes))) : '';
   const requiresSize = !!sizeChipsHTML;
 
   modal.querySelector('#quickview-body').innerHTML = `
@@ -89,10 +89,10 @@ function openQuickView(product) {
       ).join('')}</table>` : ''}
       ${!soldOut ? sizeChipsHTML : ''}
       ${soldOut ? `
-        <button class="btn btn-ghost btn-block" type="button" disabled>Sold Out</button>` : `
+        <span class="mini-action mini-action-soldout">Sold Out</span>` : `
         <div class="pd-actions">
-          <button class="btn btn-ghost btn-block" id="qv-add-cart" type="button">Add to Cart</button>
-          <button class="btn btn-gold btn-block" id="qv-buy-now" type="button">Buy Now</button>
+          <button class="mini-action mini-action-lg" id="qv-add-cart" type="button">Add to Cart</button>
+          <button class="mini-action mini-action-buy mini-action-lg" id="qv-buy-now" type="button">Buy Now</button>
         </div>`}
       <a href="product.html?id=${encodeURIComponent(product.id)}" class="quickview-full-link">View Full Details</a>
     </div>`;

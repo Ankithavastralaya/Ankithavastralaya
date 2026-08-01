@@ -74,6 +74,11 @@
       </div>
 
       <div class="field">
+        <label for="p-highlights">Product Highlights (one per line — shown as a bullet list, separate from the description above)</label>
+        <textarea id="p-highlights" rows="4" placeholder="e.g.&#10;100% pure silk&#10;Handwoven by local artisans&#10;Comes with matching blouse piece"></textarea>
+      </div>
+
+      <div class="field">
         <label>Stock Status</label>
         <div class="admin-radio-row">
           <label><input type="radio" name="p-stock" value="in_stock" checked> In Stock</label>
@@ -119,6 +124,11 @@
         <label>Photos (paste image links — upload to GitHub or any image host first, then paste the link here)</label>
         <div id="p-photos-repeater"></div>
         <button type="button" class="repeater-add" id="p-photos-add">+ Add another photo link</button>
+      </div>
+
+      <div class="field">
+        <label for="p-video">Video (optional — paste a direct video link, e.g. an .mp4 hosted on ImageKit. Shown alongside the photos in the product gallery.)</label>
+        <input id="p-video" type="url" placeholder="https://...">
       </div>
 
       <div class="admin-form-row">

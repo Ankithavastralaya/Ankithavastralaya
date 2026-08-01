@@ -126,6 +126,17 @@ async function initHomeFeatured() {
   if (!grid) return;
   const all = await DataSource.getAllProducts();
   renderProductGrid('featured-grid', all.slice(0, 8));
+
+  const toggle = document.getElementById('grid-view-toggle');
+  if (toggle) {
+    toggle.querySelectorAll('.grid-view-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        toggle.querySelectorAll('.grid-view-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        grid.classList.toggle('grid-2up', btn.dataset.mode === '2');
+      });
+    });
+  }
 }
 
 async function initCategoryPage() {

@@ -19,6 +19,29 @@ function normalizeSizes(sizes) {
   });
 }
 
+// The admin's size repeater preserves whatever order the owner typed sizes
+// in, which doesn't always come out S/M/L order — this sorts to the usual
+// run regardless of entry order. Unrecognized labels (custom sizes like
+// "Free Size" or waist numbers) just sort to the end, in their own order.
+const SIZE_ORDER = ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL'];
+// "XXL"/"XXXL"-style spellings rank the same as "2XL"/"3XL" — the label
+// shown on the chip is untouched, this only affects sort order.
+const SIZE_ALIASES = { XXL: '2XL', XXXL: '3XL', XXXXL: '4XL', XXXXXL: '5XL', XXXXXXL: '6XL' };
+function sizeRank(label) {
+  const up = String(label).toUpperCase().trim();
+  return SIZE_ORDER.indexOf(SIZE_ALIASES[up] || up);
+}
+function sortSizesCanonical(sizes) {
+  return [...sizes].sort((a, b) => {
+    const ai = sizeRank(a.label);
+    const bi = sizeRank(b.label);
+    if (ai === -1 && bi === -1) return 0;
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+}
+
 function stockBadgeLabel(status) {
   if (status === 'pre_order') return 'Pre-Order';
   if (status === 'sold_out') return 'Sold Out';

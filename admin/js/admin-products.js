@@ -292,6 +292,8 @@ function openFormForEdit(product) {
   document.getElementById('p-price').value = product.price || 0;
   document.getElementById('p-name').value = product.name || '';
   document.getElementById('p-description').value = product.description || '';
+  document.getElementById('p-highlights').value = (product.highlights || []).join('\n');
+  document.getElementById('p-video').value = product.video || '';
   document.querySelector(`input[name="p-stock"][value="${product.stockStatus || 'in_stock'}"]`).checked = true;
   stockCountField.style.display = (product.stockStatus === 'in_stock' || !product.stockStatus) ? 'block' : 'none';
   document.getElementById('p-stock-count').value = product.stockCount || '';
@@ -345,10 +347,16 @@ form.addEventListener('submit', async (e) => {
     const stockStatus = document.querySelector('input[name="p-stock"]:checked').value;
     const category = document.getElementById('p-category').value;
 
+    const highlights = document.getElementById('p-highlights').value
+      .split('\n').map(s => s.trim()).filter(Boolean);
+    const video = document.getElementById('p-video').value.trim();
+
     const productData = {
       category,
       name: document.getElementById('p-name').value.trim(),
       description: document.getElementById('p-description').value.trim(),
+      highlights,
+      video,
       price: Number(document.getElementById('p-price').value) || 0,
       photos,
       stockStatus,

@@ -43,7 +43,7 @@ body{
 }
 img{max-width:100%;display:block;}
 a{color:inherit;text-decoration:none;}
-h1,h2,h3{font-family:var(--serif); font-weight:600; margin:0;}
+h1,h2,h3{font-family:var(--serif); font-weight:600; font-style:italic; color:var(--ink); margin:0;}
 .wrap{width:100%; max-width:var(--maxw); margin:0 auto; padding-left:24px; padding-right:24px;}
 @media (max-width:640px){ .wrap{padding-left:16px; padding-right:16px;} }
 
@@ -134,7 +134,9 @@ h1,h2,h3{font-family:var(--serif); font-weight:600; margin:0;}
 @media (max-width:640px){ .hero-slideshow{ aspect-ratio:4/3; max-height:260px; } }
 
 /* ---------- CATEGORY TILES ---------- */
-.cat-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; padding:32px 0; }
+.cat-section{ padding-bottom:20px; }
+.cat-section .section-head{ margin-bottom:10px; }
+.cat-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:18px; padding:8px 0 12px; }
 .cat-tile{
   display:flex; flex-direction:column; align-items:center; gap:10px;
   text-align:center; transition:transform 0.18s ease;
@@ -150,7 +152,7 @@ h1,h2,h3{font-family:var(--serif); font-weight:600; margin:0;}
 .cat-icon-photo img{ width:100%; height:100%; object-fit:cover; border-radius:50%; }
 .cat-tile h3{ font-size:13px; color:var(--ink); font-weight:600; line-height:1.3; }
 @media (max-width:480px){
-  .cat-grid{ gap:10px; padding:24px 0; }
+  .cat-grid{ gap:10px; padding:6px 0 10px; }
   .cat-tile{ gap:6px; }
   .cat-tile .cat-icon{ width:52px; height:52px; font-size:22px; }
   .cat-tile h3{ font-size:10.5px; }
@@ -160,6 +162,17 @@ h1,h2,h3{font-family:var(--serif); font-weight:600; margin:0;}
 section{ padding:16px 0 56px; }
 .section-head{ margin-bottom:24px; }
 .section-head h2{ font-size:clamp(22px,3vw,30px); margin-top:6px; }
+
+.grid-toggle-head{ display:flex; justify-content:flex-end; margin-bottom:14px; }
+.grid-view-toggle{ display:flex; gap:6px; }
+.grid-view-btn{
+  width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--line); border-radius:var(--radius); background:var(--white);
+  color:var(--text-muted); cursor:pointer; transition:border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.grid-view-btn svg{ width:15px; height:15px; }
+.grid-view-btn:hover{ border-color:var(--maroon); color:var(--maroon); }
+.grid-view-btn.active{ border-color:var(--maroon); background:var(--maroon); color:var(--white); }
 
 /* ---------- PRODUCT GRID / CARD ---------- */
 .product-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:22px; }
@@ -193,6 +206,10 @@ section{ padding:16px 0 56px; }
   .hscroll-products{ gap:10px; }
   .hscroll-products .product-card{ flex:0 0 80%; }
 }
+/* "2 at a time" grid-view mode — always exactly 2 per screen, at every
+   width, overriding the breakpoint sizing above (higher specificity via
+   the extra .grid-2up class, so it wins regardless of source order). */
+.hscroll-products.grid-2up .product-card{ flex:0 0 calc((100% - 22px) / 2); }
 
 .product-card{ background:var(--white); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column; }
 .product-card-photo{ aspect-ratio:3/4.6; overflow:hidden; background:var(--cream-2); position:relative; }
@@ -207,21 +224,25 @@ section{ padding:16px 0 56px; }
 .product-card.sold_out .product-card-photo img{ opacity:0.55; }
 .product-card-body{ padding:10px 4px; display:flex; flex-direction:column; gap:4px; text-align:center; }
 .product-card-name{
-  font-family:var(--serif); font-size:14px; font-weight:300; line-height:1.35;
-  letter-spacing:0.02em; color:var(--ink-soft);
+  font-family:var(--serif); font-size:15px; font-weight:600; font-style:italic; line-height:1.35;
+  letter-spacing:0.01em; color:var(--ink);
 }
-.product-card-design{ font-family:var(--serif); font-size:11.5px; font-weight:300; font-style:italic; color:var(--text-muted); letter-spacing:0.01em; }
+.product-card-design{ font-family:var(--serif); font-size:12px; font-weight:600; font-style:italic; color:var(--ink-soft); letter-spacing:0.01em; }
 .product-card-divider{ width:22px; height:1px; background:var(--gold); margin:2px auto; }
-.product-card-price{ font-family:var(--serif); font-size:14px; font-weight:300; letter-spacing:0.03em; color:var(--maroon); }
+.product-card-price{ font-family:var(--serif); font-size:15.5px; font-weight:600; font-style:italic; letter-spacing:0.02em; color:var(--maroon); }
 .product-card-mini-actions{ display:flex; align-items:center; justify-content:center; gap:16px; margin-top:2px; }
 .mini-action{
   background:none; border:none; padding:2px 0; cursor:pointer; touch-action:manipulation;
-  font-family:var(--serif); font-size:10.5px; font-weight:300; font-style:italic;
-  letter-spacing:0.02em; color:var(--text-muted); text-decoration:underline; text-underline-offset:2px;
+  font-family:var(--serif); font-size:11.5px; font-weight:700; font-style:italic;
+  letter-spacing:0.02em; color:var(--ink); text-decoration:underline; text-underline-offset:2px;
 }
-.mini-action:hover{ color:var(--ink); }
+.mini-action:hover{ color:var(--maroon-dark); }
 .mini-action-buy{ color:var(--maroon); }
 .mini-action-buy:hover{ color:var(--maroon-dark); }
+/* Bigger tap target for the primary product-page/Quick View actions —
+   product cards on home/category keep the small size, this is only used
+   on the single-product view where Add to Cart/Buy Now are the main CTA. */
+.mini-action-lg{ font-size:18px; padding:6px 0; }
 .wishlist-btn{
   position:absolute; top:8px; right:8px; z-index:2; width:26px; height:26px; padding:0;
   border:none; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center;
@@ -260,12 +281,28 @@ section{ padding:16px 0 56px; }
 @media (max-width:800px){ .product-detail{ grid-template-columns:1fr; gap:28px; } }
 .pd-gallery-main{ aspect-ratio:3/4; background:var(--cream-2); border:1px solid var(--line); overflow:hidden; margin-bottom:10px; }
 .pd-gallery-main img{ width:100%; height:100%; object-fit:cover; }
+.pd-gallery-main video{ width:100%; height:100%; object-fit:contain; background:var(--ink); }
 .pd-thumbs{ display:flex; gap:8px; flex-wrap:wrap; }
 .pd-thumbs img{ width:64px; height:80px; object-fit:cover; border:1px solid var(--line); cursor:pointer; border-radius:2px; }
 .pd-thumbs img.active{ border-color:var(--maroon); border-width:2px; }
+.pd-thumb-video{
+  width:64px; height:80px; border:1px solid var(--line); border-radius:2px; cursor:pointer;
+  background:var(--ink); display:flex; align-items:center; justify-content:center;
+}
+.pd-thumb-video .insta-play-icon{ width:24px; height:24px; font-size:9px; }
+.pd-thumb-video.active{ border-color:var(--maroon); border-width:2px; }
+.pd-highlights{ margin-bottom:20px; }
+.pd-highlights-label{ font-size:12.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:8px; }
+.pd-highlights-list{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:6px; }
+.pd-highlights-list li{
+  font-size:14px; color:var(--ink-soft); line-height:1.5; padding-left:20px; position:relative;
+}
+.pd-highlights-list li::before{
+  content:"✓"; position:absolute; left:0; top:0; color:var(--maroon); font-weight:700; font-size:12px;
+}
 .pd-cat{ font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; }
 .pd-name{ font-size:clamp(22px,3.4vw,30px); margin-bottom:10px; }
-.pd-price{ font-family:var(--serif); font-size:24px; color:var(--maroon); font-weight:600; margin-bottom:14px; }
+.pd-price{ font-family:var(--serif); font-size:20px; font-weight:600; font-style:italic; letter-spacing:0.02em; color:var(--maroon); margin-bottom:14px; }
 .pd-badge{ display:inline-block; font-size:11.5px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; padding:5px 12px; border-radius:20px; margin-bottom:16px; }
 .pd-badge.in_stock{ background:var(--success-bg); color:var(--success); }
 .pd-badge.pre_order{ background:var(--preorder-bg); color:var(--preorder); }
@@ -293,9 +330,8 @@ section{ padding:16px 0 56px; }
 .size-chip-tag{ font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em; }
 .size-selector-note{ font-size:12px; color:var(--maroon); margin-top:6px; min-height:14px; }
 .pd-qty-row{ display:flex; align-items:center; gap:14px; margin-bottom:18px; }
-.pd-actions{ display:flex; gap:12px; }
-.pd-actions .btn{ flex:1; }
-@media (max-width:480px){ .pd-actions{ flex-direction:column; } }
+.pd-actions{ display:flex; align-items:center; gap:16px; }
+.mini-action-soldout{ font-family:var(--serif); font-size:11.5px; font-weight:700; font-style:italic; letter-spacing:0.02em; color:var(--soldout); }
 
 /* ---------- QUICK VIEW MODAL ---------- */
 .quickview-modal{ display:none; position:fixed; inset:0; z-index:300; }
@@ -304,7 +340,7 @@ section{ padding:16px 0 56px; }
 .quickview-panel{
   position:relative; z-index:1; background:var(--white); border-radius:var(--radius);
   max-width:760px; width:min(92vw,760px); max-height:88vh; overflow-y:auto;
-  margin:6vh auto; display:flex; padding:28px;
+  margin:6vh auto; padding:28px;
 }
 .quickview-close{
   position:absolute; top:12px; right:14px; background:none; border:none;
@@ -385,35 +421,23 @@ body.quickview-lock{ overflow:hidden; }
 .confirm-panel p{ color:var(--text-muted); max-width:440px; margin:0 auto 22px; }
 
 .insta-section{ padding-top:0; }
-/* Same treatment as .hscroll-products: large videos, horizontal scroll.
-   Always exactly 4 slots (real + "coming soon" placeholders), so desktop
-   fits all 4 with no dynamic count needed; phones get one big video at a
-   time with a peek of the next, swipeable left/right. */
+/* Horizontal scroll, always sized for exactly 4 full tiles + a 10% peek
+   of the 5th (the peek is the "there's more, swipe/scroll" affordance) —
+   same formula at every screen width on purpose, not stepped per
+   breakpoint, so phones and desktops both show the same 4-plus-a-sliver. */
 .insta-video-grid{
-  display:flex; flex-wrap:nowrap; overflow-x:auto; gap:22px;
+  display:flex; flex-wrap:nowrap; overflow-x:auto; gap:12px;
   scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
   scrollbar-width:none; padding-bottom:4px;
 }
 .insta-video-grid::-webkit-scrollbar{ display:none; }
-.insta-video-slot{ flex:0 0 calc((100% - 3 * 22px) / 4); scroll-snap-align:start; }
-@media (max-width:980px){
-  .insta-video-grid{ gap:16px; }
-  .insta-video-slot{ flex:0 0 calc((100% - 32px) / 3); }
-}
-@media (max-width:720px){
-  .insta-video-grid{ gap:14px; }
-  .insta-video-slot{ flex:0 0 68%; }
-}
-@media (max-width:420px){
-  .insta-video-grid{ gap:10px; }
-  .insta-video-slot{ flex:0 0 80%; }
-}
+.insta-video-slot{ flex:0 0 calc((100% - 4 * 12px) / 4.1); scroll-snap-align:start; }
 /* Same footprint as .product-card-photo so the "coming soon" placeholders
    read as the same size as the product photos. Real embeds (.has-video)
    override this below — Instagram's own embed script sets its iframe's
    height to match the real post, and clipping that with overflow:hidden
    breaks the play button, so real slots can't use a forced aspect-ratio. */
-.insta-video-slot{ aspect-ratio:3/4; border-radius:var(--radius); overflow:hidden; background:var(--cream-2); }
+.insta-video-slot{ aspect-ratio:1/1; border-radius:var(--radius); overflow:hidden; background:var(--cream-2); }
 .insta-video-slot iframe{ width:100%; height:100%; }
 /* Instagram's embed script renders its iframe with position:absolute and a
    326px min-width it won't shrink below — position:relative here is what
@@ -428,12 +452,12 @@ body.quickview-lock{ overflow:hidden; }
 }
 .insta-video-slot.has-video iframe{ width:auto; height:auto; }
 .insta-video-placeholder{
-  width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
-  border:1px dashed var(--line); color:var(--text-muted); font-size:12.5px; text-align:center; padding:16px;
-  background:repeating-linear-gradient(135deg, rgba(36,22,17,0.02), rgba(36,22,17,0.02) 10px, rgba(36,22,17,0.05) 10px, rgba(36,22,17,0.05) 20px);
+  width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+  border:1px dashed rgba(193,154,73,0.45); color:var(--ink-soft); font-size:11.5px; text-align:center; padding:12px;
+  background:repeating-linear-gradient(135deg, rgba(193,154,73,0.05), rgba(193,154,73,0.05) 10px, rgba(193,154,73,0.1) 10px, rgba(193,154,73,0.1) 20px);
 }
 @media (max-width:640px){
-  .insta-video-placeholder{ gap:6px; padding:6px; font-size:10px; }
+  .insta-video-placeholder{ gap:5px; padding:6px; font-size:9.5px; }
 }
 
 /* ---------- HORIZONTAL SCROLL BUTTONS ---------- */
@@ -454,11 +478,11 @@ body.quickview-lock{ overflow:hidden; }
   .hscroll-btn{ display:flex; }
 }
 .insta-play-icon{
-  width:44px; height:44px; border-radius:50%; background:var(--maroon); color:var(--white);
-  display:flex; align-items:center; justify-content:center; font-size:16px; padding-left:3px; flex-shrink:0;
+  width:32px; height:32px; border-radius:50%; background:var(--maroon); color:var(--white);
+  display:flex; align-items:center; justify-content:center; font-size:12px; padding-left:2px; flex-shrink:0;
 }
-@media (max-width:640px){ .insta-play-icon{ width:28px; height:28px; font-size:11px; } }
-@media (max-width:400px){ .insta-play-icon{ width:22px; height:22px; font-size:9px; padding-left:2px; } }
+@media (max-width:640px){ .insta-play-icon{ width:22px; height:22px; font-size:9px; } }
+@media (max-width:400px){ .insta-play-icon{ width:18px; height:18px; font-size:7px; padding-left:1px; } }
 
 footer{
   background:var(--ink);

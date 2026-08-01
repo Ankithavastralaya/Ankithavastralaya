@@ -30,6 +30,36 @@ function escapeHtmlAttr(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+// Highlights are a separate bullet list from the free-text description —
+// stored as their own array (product.highlights) rather than folded into
+// product.description, so they render as a distinct "Highlights" list
+// instead of just more description text.
+function buildHighlightsHTML(highlights) {
+  if (!Array.isArray(highlights) || !highlights.length) return '';
+  return `
+    <div class="pd-highlights">
+      <div class="pd-highlights-label">Highlights</div>
+      <ul class="pd-highlights-list">
+        ${highlights.map(h => `<li>${escapeHtmlAttr(h)}</li>`).join('')}
+      </ul>
+    </div>`;
+}
+
+// Gallery mixes photos with a single optional video (product.video) into
+// one ordered list of {type, src} so the main viewer and thumbnail strip
+// can treat them uniformly — video is always last, after all photos.
+function buildGalleryItems(product, photos) {
+  const items = photos.map(src => ({ type: 'photo', src }));
+  if (product.video) items.push({ type: 'video', src: product.video });
+  return items;
+}
+
+function mediaHTML(item, id) {
+  return item.type === 'video'
+    ? `<video id="${id}" src="${item.src}" controls playsinline></video>`
+    : `<img id="${id}" src="${item.src}" alt="">`;
+}
+
 function buildAttributeRows(attributes) {
   if (!attributes) return [];
   const rows = [];
@@ -69,15 +99,18 @@ function renderProduct(product) {
   const priceText = 'Rs. ' + product.price.toLocaleString('en-IN');
   const attrRows = buildAttributeRows(product.attributes);
   const photos = product.photos && product.photos.length ? product.photos : [''];
-  const sizeChipsHTML = product.category === 'readymade' ? buildSizeChipsHTML(normalizeSizes(product.sizes)) : '';
+  const galleryItems = buildGalleryItems(product, photos);
+  const sizeChipsHTML = product.category === 'readymade' ? buildSizeChipsHTML(sortSizesCanonical(normalizeSizes(product.sizes))) : '';
   const requiresSize = !!sizeChipsHTML;
 
   root.innerHTML = `
     <div class="product-detail">
       <div class="pd-gallery">
-        <div class="pd-gallery-main"><img id="pd-main-photo" src="${photos[0]}" alt="${product.name}"></div>
-        ${photos.length > 1 ? `<div class="pd-thumbs">${photos.map((p, i) =>
-          `<img src="${p}" data-src="${p}" class="${i === 0 ? 'active' : ''}" alt="${product.name} photo ${i + 1}">`
+        <div class="pd-gallery-main">${mediaHTML(galleryItems[0], 'pd-main-media')}</div>
+        ${galleryItems.length > 1 ? `<div class="pd-thumbs">${galleryItems.map((item, i) =>
+          item.type === 'video'
+            ? `<div class="pd-thumb-video ${i === 0 ? 'active' : ''}" data-index="${i}"><span class="insta-play-icon">&#9658;</span></div>`
+            : `<img src="${item.src}" data-index="${i}" class="${i === 0 ? 'active' : ''}" alt="${product.name} photo ${i + 1}">`
         ).join('')}</div>` : ''}
       </div>
       <div class="pd-info">
@@ -87,12 +120,13 @@ function renderProduct(product) {
         <span class="pd-badge ${product.stockStatus}">${badgeLabel}</span>
         <p class="pd-note">${stockNote}</p>
         <p class="pd-desc">${product.description || ''}</p>
+        ${buildHighlightsHTML(product.highlights)}
         ${attrRows.length ? `<table class="attr-table">${attrRows.map(([k, v]) =>
           `<tr><td>${k}</td><td>${v}</td></tr>`
         ).join('')}</table>` : ''}
         ${!soldOut ? sizeChipsHTML : ''}
         ${soldOut ? `
-        <button class="btn btn-ghost btn-block" type="button" disabled>Sold Out</button>` : `
+        <span class="mini-action mini-action-soldout">Sold Out</span>` : `
         <div class="pd-qty-row">
           <div class="qty-control">
             <button type="button" id="qty-minus" aria-label="Decrease quantity">−</button>
@@ -101,17 +135,18 @@ function renderProduct(product) {
           </div>
         </div>
         <div class="pd-actions">
-          <button class="btn btn-ghost btn-block" id="add-to-cart-btn" type="button">Add to Cart</button>
-          <button class="btn btn-gold btn-block" id="buy-now-btn" type="button">Buy Now</button>
+          <button class="mini-action mini-action-lg" id="add-to-cart-btn" type="button">Add to Cart</button>
+          <button class="mini-action mini-action-buy mini-action-lg" id="buy-now-btn" type="button">Buy Now</button>
         </div>`}
       </div>
     </div>`;
 
-  const mainPhoto = document.getElementById('pd-main-photo');
-  root.querySelectorAll('.pd-thumbs img').forEach(thumb => {
+  const galleryMain = root.querySelector('.pd-gallery-main');
+  root.querySelectorAll('.pd-thumbs img, .pd-thumbs .pd-thumb-video').forEach(thumb => {
     thumb.addEventListener('click', () => {
-      mainPhoto.src = thumb.dataset.src;
-      root.querySelectorAll('.pd-thumbs img').forEach(t => t.classList.remove('active'));
+      const item = galleryItems[Number(thumb.dataset.index)];
+      galleryMain.innerHTML = mediaHTML(item, 'pd-main-media');
+      root.querySelectorAll('.pd-thumbs img, .pd-thumbs .pd-thumb-video').forEach(t => t.classList.remove('active'));
       thumb.classList.add('active');
     });
   });
