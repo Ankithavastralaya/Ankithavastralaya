@@ -24,7 +24,9 @@
   <nav class="admin-tabs">
     <button class="admin-tab active" data-tab="products" type="button">Products</button>
     <button class="admin-tab" data-tab="orders" type="button">Orders</button>
-    <button class="admin-tab" data-tab="instagram" type="button">Instagram Videos</button>
+    <button class="admin-tab" data-tab="instagram" type="button">Trending Videos</button>
+    <button class="admin-tab" data-tab="topselling" type="button">Top Selling</button>
+    <button class="admin-tab" data-tab="homeorder" type="button">Homepage Order</button>
   </nav>
 
   <!-- ---------- PRODUCTS ---------- -->
@@ -211,17 +213,40 @@
     <p class="admin-empty-note" id="orders-empty" style="display:none;">No orders yet.</p>
   </section>
 
-  <!-- ---------- INSTAGRAM VIDEOS ---------- -->
+  <!-- ---------- TRENDING VIDEOS ---------- -->
   <section class="admin-panel" id="panel-instagram">
-    <div class="admin-panel-head"><h2>Instagram Videos</h2></div>
-    <p class="admin-empty-note" style="padding-top:0;">Paste up to 4 Instagram post/reel links. These show on your home page ("Trending Now") automatically. Leave any blank to show a "coming soon" placeholder instead.</p>
+    <div class="admin-panel-head"><h2>Trending Videos</h2></div>
+    <p class="admin-empty-note" style="padding-top:0;">Paste a direct video link (e.g. an .mp4 hosted on ImageKit) — not just Instagram, any playable video link works. Add as many as you want; they all show on the home page "Trending Now" row, scrollable.</p>
     <form class="admin-form" id="insta-form">
-      <div class="field"><label for="insta-url-0">Video 1 link</label><input id="insta-url-0" type="url" placeholder="https://www.instagram.com/reel/..."></div>
-      <div class="field"><label for="insta-url-1">Video 2 link</label><input id="insta-url-1" type="url" placeholder="https://www.instagram.com/reel/..."></div>
-      <div class="field"><label for="insta-url-2">Video 3 link</label><input id="insta-url-2" type="url" placeholder="https://www.instagram.com/reel/..."></div>
-      <div class="field"><label for="insta-url-3">Video 4 link</label><input id="insta-url-3" type="url" placeholder="https://www.instagram.com/reel/..."></div>
-      <button type="submit" class="btn btn-primary">Save Links</button>
+      <div id="insta-videos-repeater"></div>
+      <button type="button" class="repeater-add" id="insta-videos-add">+ Add another video link</button>
+      <div class="admin-form-actions">
+        <button type="submit" class="btn btn-primary">Save Videos</button>
+      </div>
     </form>
+  </section>
+
+  <!-- ---------- TOP SELLING ---------- -->
+  <section class="admin-panel" id="panel-topselling">
+    <div class="admin-panel-head"><h2>Top Selling</h2></div>
+    <p class="admin-empty-note" style="padding-top:0;">Add as many products as you want to spotlight in the home page's "Top Selling" row — any mix of categories, no limit. They show in this order, scrollable.</p>
+    <form class="admin-form" id="top-selling-form">
+      <div id="top-selling-repeater"></div>
+      <button type="button" class="repeater-add" id="top-selling-add">+ Add another product</button>
+      <div class="admin-form-actions">
+        <button type="submit" class="btn btn-primary">Save Top Selling</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ---------- HOMEPAGE ORDER ---------- -->
+  <section class="admin-panel" id="panel-homeorder">
+    <div class="admin-panel-head"><h2>Homepage Order</h2></div>
+    <p class="admin-empty-note" style="padding-top:0;">Arrange the order products appear on the home page — use the arrows to move a product up or down, then Save. New products you haven't ordered yet appear at the bottom until you place them.</p>
+    <div id="home-order-list"></div>
+    <div class="admin-form-actions">
+      <button type="button" class="btn btn-primary" id="home-order-save">Save Order</button>
+    </div>
   </section>
 </div>
 
@@ -241,5 +266,7 @@
 <script type="module" src="js/admin-products.js"></script>
 <script type="module" src="js/admin-orders.js"></script>
 <script type="module" src="js/admin-instagram.js"></script>
+<script type="module" src="js/admin-top-selling.js"></script>
+<script type="module" src="js/admin-home-order.js"></script>
 </body>
 </html>

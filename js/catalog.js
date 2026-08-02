@@ -121,11 +121,27 @@ function setupQuickViewVisibility(container) {
   container.querySelectorAll('.product-card-photo').forEach(photo => observer.observe(photo));
 }
 
+// Sorts by the owner's saved homepage order (admin's Homepage Order tab);
+// anything not in that list yet — a brand-new product — is appended at
+// the end, in whatever order DataSource returned it, instead of vanishing.
+function applyHomeOrder(products, orderIds) {
+  const byId = new Map(products.map(p => [p.id, p]));
+  const ordered = [];
+  orderIds.forEach(id => {
+    if (byId.has(id)) { ordered.push(byId.get(id)); byId.delete(id); }
+  });
+  byId.forEach(p => ordered.push(p));
+  return ordered;
+}
+
 async function initHomeFeatured() {
   const grid = document.getElementById('featured-grid');
   if (!grid) return;
-  const all = await DataSource.getAllProducts();
-  renderProductGrid('featured-grid', all.slice(0, 8));
+  const [all, orderIds] = await Promise.all([
+    DataSource.getAllProducts(),
+    DataSource.getHomeOrder()
+  ]);
+  renderProductGrid('featured-grid', applyHomeOrder(all, orderIds));
 
   const toggle = document.getElementById('grid-view-toggle');
   if (toggle) {
@@ -137,6 +153,23 @@ async function initHomeFeatured() {
       });
     });
   }
+}
+
+async function initTopSelling() {
+  const section = document.getElementById('top-selling-section');
+  if (!section) return;
+  const ids = await DataSource.getTopSellingIds();
+  const products = (await Promise.all(ids.map(id => DataSource.getProductById(id)))).filter(Boolean);
+  if (!products.length) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+  renderProductGrid('top-selling-grid', products);
+  // The scroll buttons (js/hscroll-buttons.js) size themselves up once at
+  // load, before this async Firestore fetch resolves — nudge them to
+  // re-check now that the row actually has content.
+  document.getElementById('top-selling-grid').dispatchEvent(new Event('scroll'));
 }
 
 async function initCategoryPage() {
@@ -162,5 +195,6 @@ async function initCategoryPage() {
 
 document.addEventListener('DOMContentLoaded', () => {
   initHomeFeatured();
+  initTopSelling();
   initCategoryPage();
 });

@@ -180,10 +180,17 @@ section{ padding:16px 0 56px; }
 @media (max-width:720px){ .product-grid{ grid-template-columns:repeat(2,1fr); gap:14px; } }
 @media (max-width:420px){ .product-grid{ grid-template-columns:1fr 1fr; gap:10px; } }
 
-/* Homepage "Latest Arrivals" — large photos, horizontal scroll instead of
-   a wrapping grid. Desktop always sizes cards for exactly 4 in view (scroll
-   for more once there are more than 4 products); phones get one big card
-   at a time with a peek of the next, swipeable left/right. */
+/* Homepage "Latest Arrivals" is now a full wrapping grid, same as the
+   category pages — the grid-view toggle just switches its column count
+   between the default (4/3/2 responsive, same as .product-grid) and a
+   fixed 2 columns at every width. #featured-grid's ID gives this enough
+   specificity to win over the responsive .product-grid breakpoint rules
+   without affecting category.html's #product-grid. */
+#featured-grid.grid-2up{ grid-template-columns:repeat(2,1fr); }
+
+/* "Top Selling" — horizontal scroll instead of a wrapping grid, same
+   4-plus-a-peek pattern as the Trending Now videos: no auto-slide, just
+   the prev/next buttons (mouse/trackpad) or a swipe (touch). */
 .hscroll-products{
   display:flex; flex-wrap:nowrap; overflow-x:auto; gap:22px;
   scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
@@ -191,25 +198,17 @@ section{ padding:16px 0 56px; }
 }
 .hscroll-products::-webkit-scrollbar{ display:none; }
 .hscroll-products .product-card{
-  flex:0 0 calc((100% - 3 * 22px) / 4);
+  flex:0 0 calc((100% - 3 * 22px) / 4.1);
   scroll-snap-align:start;
-}
-@media (max-width:980px){
-  .hscroll-products{ gap:16px; }
-  .hscroll-products .product-card{ flex:0 0 calc((100% - 32px) / 3); }
 }
 @media (max-width:720px){
   .hscroll-products{ gap:14px; }
-  .hscroll-products .product-card{ flex:0 0 68%; }
+  .hscroll-products .product-card{ flex:0 0 calc((100% - 14px) / 2.1); }
 }
 @media (max-width:420px){
   .hscroll-products{ gap:10px; }
   .hscroll-products .product-card{ flex:0 0 80%; }
 }
-/* "2 at a time" grid-view mode — always exactly 2 per screen, at every
-   width, overriding the breakpoint sizing above (higher specificity via
-   the extra .grid-2up class, so it wins regardless of source order). */
-.hscroll-products.grid-2up .product-card{ flex:0 0 calc((100% - 22px) / 2); }
 
 .product-card{ background:var(--white); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column; }
 .product-card-photo{ aspect-ratio:3/4.6; overflow:hidden; background:var(--cream-2); position:relative; }
@@ -295,7 +294,7 @@ section{ padding:16px 0 56px; }
 .pd-highlights-label{ font-size:12.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:8px; }
 .pd-highlights-list{ margin:0; padding-left:0; list-style:none; display:flex; flex-direction:column; gap:6px; }
 .pd-highlights-list li{
-  font-size:14px; color:var(--ink-soft); line-height:1.5; padding-left:20px; position:relative;
+  font-family:var(--sans); font-size:14.5px; font-weight:700; color:var(--ink-soft); line-height:1.5; padding-left:20px; position:relative;
 }
 .pd-highlights-list li::before{
   content:"✓"; position:absolute; left:0; top:0; color:var(--maroon); font-weight:700; font-size:12px;
@@ -406,7 +405,7 @@ body.quickview-lock{ overflow:hidden; }
 .field{ margin-bottom:16px; }
 .field label{ display:block; font-size:12px; font-weight:600; letter-spacing:0.03em; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px; }
 .field .required{ color:var(--maroon); }
-.field input, .field textarea{
+.field input, .field textarea, .field select{
   width:100%; padding:12px 14px; font-family:var(--sans); font-size:14px;
   border:1px solid var(--line); border-radius:var(--radius); background:var(--white); color:var(--ink);
 }
@@ -424,41 +423,20 @@ body.quickview-lock{ overflow:hidden; }
 /* Horizontal scroll, always sized for exactly 4 full tiles + a 10% peek
    of the 5th (the peek is the "there's more, swipe/scroll" affordance) —
    same formula at every screen width on purpose, not stepped per
-   breakpoint, so phones and desktops both show the same 4-plus-a-sliver. */
+   breakpoint, so phones and desktops both show the same 4-plus-a-sliver.
+   Any number of videos can be in the row — real <video> elements, so
+   (unlike the old Instagram embeds) they need no special-case sizing. */
 .insta-video-grid{
   display:flex; flex-wrap:nowrap; overflow-x:auto; gap:12px;
   scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch;
   scrollbar-width:none; padding-bottom:4px;
 }
 .insta-video-grid::-webkit-scrollbar{ display:none; }
-.insta-video-slot{ flex:0 0 calc((100% - 4 * 12px) / 4.1); scroll-snap-align:start; }
-/* Same footprint as .product-card-photo so the "coming soon" placeholders
-   read as the same size as the product photos. Real embeds (.has-video)
-   override this below — Instagram's own embed script sets its iframe's
-   height to match the real post, and clipping that with overflow:hidden
-   breaks the play button, so real slots can't use a forced aspect-ratio. */
-.insta-video-slot{ aspect-ratio:1/1; border-radius:var(--radius); overflow:hidden; background:var(--cream-2); }
-.insta-video-slot iframe{ width:100%; height:100%; }
-/* Instagram's embed script renders its iframe with position:absolute and a
-   326px min-width it won't shrink below — position:relative here is what
-   makes that iframe anchor inside its own slot instead of the whole
-   carousel, and since an absolutely-positioned child can't push its own
-   parent taller, min-height is a fixed reserved space (not clipped, thanks
-   to overflow:visible) so the row doesn't collapse while/if a real embed
-   needs more room than that. */
-.insta-video-slot.has-video{
-  position:relative; aspect-ratio:auto; overflow:visible; background:none;
-  flex:0 0 340px; min-width:340px; min-height:700px;
+.insta-video-slot{
+  flex:0 0 calc((100% - 4 * 12px) / 4.1); scroll-snap-align:start;
+  aspect-ratio:9/16; border-radius:var(--radius); overflow:hidden; background:var(--cream-2);
 }
-.insta-video-slot.has-video iframe{ width:auto; height:auto; }
-.insta-video-placeholder{
-  width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
-  border:1px dashed rgba(193,154,73,0.45); color:var(--ink-soft); font-size:11.5px; text-align:center; padding:12px;
-  background:repeating-linear-gradient(135deg, rgba(193,154,73,0.05), rgba(193,154,73,0.05) 10px, rgba(193,154,73,0.1) 10px, rgba(193,154,73,0.1) 20px);
-}
-@media (max-width:640px){
-  .insta-video-placeholder{ gap:5px; padding:6px; font-size:9.5px; }
-}
+.insta-video-slot video{ width:100%; height:100%; object-fit:cover; background:var(--ink); }
 
 /* ---------- HORIZONTAL SCROLL BUTTONS ---------- */
 .hscroll-carousel{ position:relative; }
@@ -603,6 +581,7 @@ body.admin-modal-lock{ overflow:hidden; }
   border:1px solid var(--line); border-radius:var(--radius); background:var(--white); color:var(--ink);
 }
 .repeater-row .p-size-stock{ flex:0 0 80px; }
+.repeater-row .ts-product-select{ flex:1; }
 .repeater-remove{ background:none; border:1px solid var(--line); border-radius:var(--radius); width:36px; height:36px; cursor:pointer; color:var(--maroon); flex-shrink:0; }
 .repeater-add{ font-size:12px; font-weight:600; color:var(--maroon); background:none; border:none; cursor:pointer; padding:4px 0; text-decoration:underline; }
 .admin-form-actions{ display:flex; gap:10px; margin-top:20px; }
@@ -618,3 +597,10 @@ body.admin-modal-lock{ overflow:hidden; }
 .order-status-btn.active{ background:var(--maroon); color:var(--white); border-color:var(--maroon); }
 .dispatch-form{ margin-top:16px; padding-top:16px; border-top:1px solid var(--line); max-width:360px; }
 .admin-empty-note{ color:var(--text-muted); font-size:13.5px; padding:20px 0; }
+
+.home-order-row{ display:flex; align-items:center; gap:12px; padding:8px 10px; border:1px solid var(--line); border-radius:var(--radius); margin-bottom:6px; background:var(--white); }
+.home-order-row img{ width:40px; height:52px; object-fit:cover; border-radius:2px; flex-shrink:0; background:var(--cream-2); }
+.home-order-name{ flex:1; font-size:13.5px; }
+.home-order-controls{ display:flex; gap:4px; flex-shrink:0; }
+.home-order-controls button{ width:28px; height:28px; border:1px solid var(--line); border-radius:var(--radius); background:var(--white); cursor:pointer; color:var(--ink); }
+.home-order-controls button:hover{ border-color:var(--maroon); color:var(--maroon); }

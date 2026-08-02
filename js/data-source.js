@@ -47,6 +47,29 @@ const DataSource = {
 
   categoryLabel(category) {
     return CATEGORY_LABELS[category] || category;
+  },
+
+  // Owner-defined homepage product order (admin's Homepage Order tab) —
+  // a plain array of product IDs. Products not in the list just aren't
+  // covered by it; the caller decides where they land.
+  async getHomeOrder() {
+    try {
+      const snap = await getDoc(doc(db, 'meta', 'homeOrder'));
+      return snap.exists() ? (snap.data().ids || []) : [];
+    } catch (e) {
+      return [];
+    }
+  },
+
+  // The owner's 4 hand-picked "Top Selling" products (admin's Top Selling
+  // tab) — any mix of categories, or all one category, her call.
+  async getTopSellingIds() {
+    try {
+      const snap = await getDoc(doc(db, 'meta', 'topSelling'));
+      return snap.exists() ? (snap.data().ids || []).filter(Boolean) : [];
+    } catch (e) {
+      return [];
+    }
   }
 };
 
