@@ -1,39 +1,34 @@
 // Top Selling tab: an open-ended repeater — add as many products as
-// wanted (any category mix, no limit), each row a dropdown picking one
-// active product. Saved as an ordered array of product IDs to
-// meta/topSelling. The home page's "Top Selling" carousel (js/catalog.js
-// initTopSelling) reads this same doc live.
+// wanted (any category mix, no limit), each row a Product ID typed in
+// directly (with a datalist of "ID — Name" suggestions to cut down on
+// typos, but a plain text field, not a forced dropdown). Saved as an
+// ordered array of product IDs to meta/topSelling. The home page's
+// "Top Selling" carousel (js/catalog.js initTopSelling) reads this same
+// doc live — an ID that doesn't match a real product just quietly
+// doesn't show anything for that slot.
 
 import { db } from '../../js/firebase-init.js';
 import { collection, getDocs, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-const CATEGORY_LABELS = {
-  sarees: 'Sarees',
-  unstitched: 'Unstitched Dress Materials',
-  readymade: 'Ready-Made Dresses',
-  jewellery: 'Jewellery'
-};
-
 const repeater = document.getElementById('top-selling-repeater');
 const form = document.getElementById('top-selling-form');
-let optionsHTML = '<option value="">Choose a product…</option>';
+const datalist = document.getElementById('ts-product-list');
 
-function addProductRow(selectedId) {
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function addProductRow(productId) {
   const row = document.createElement('div');
   row.className = 'repeater-row';
   row.innerHTML = `
-    <select class="ts-product-select">${optionsHTML}</select>
+    <input type="text" class="ts-product-input" list="ts-product-list" placeholder="Product ID, e.g. AV-RMD-002" value="${escapeHtml(productId || '')}">
     <button type="button" class="repeater-remove" aria-label="Remove">&times;</button>`;
-  row.querySelector('.ts-product-select').value = selectedId || '';
   row.querySelector('.repeater-remove').addEventListener('click', () => row.remove());
   repeater.appendChild(row);
 }
 
 document.getElementById('top-selling-add').addEventListener('click', () => addProductRow());
-
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-}
 
 async function loadTopSelling() {
   const [productsSnap, tsSnap] = await Promise.all([
@@ -45,8 +40,8 @@ async function loadTopSelling() {
     .filter(p => p.active !== false);
   const savedIds = tsSnap.exists() ? (tsSnap.data().ids || []) : [];
 
-  optionsHTML += products.map(p =>
-    `<option value="${p.id}">${escapeHtml(p.name)} — ${CATEGORY_LABELS[p.category] || p.category} — Rs. ${Number(p.price || 0).toLocaleString('en-IN')}</option>`
+  datalist.innerHTML = products.map(p =>
+    `<option value="${p.id}">${escapeHtml(p.name)}</option>`
   ).join('');
 
   repeater.innerHTML = '';
@@ -56,8 +51,8 @@ async function loadTopSelling() {
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const ids = Array.from(repeater.querySelectorAll('.ts-product-select'))
-    .map(s => s.value).filter(Boolean);
+  const ids = Array.from(repeater.querySelectorAll('.ts-product-input'))
+    .map(i => i.value.trim()).filter(Boolean);
   await setDoc(doc(db, 'meta', 'topSelling'), { ids }, { merge: true });
   showToast('Top Selling saved');
 });

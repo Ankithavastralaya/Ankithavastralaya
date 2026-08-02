@@ -46,7 +46,19 @@ function buildWhatsAppUrl(cart, customer, orderId) {
 // up by ID later. Deliberately not awaited before window.open() — that
 // must stay synchronous within the click handler or browsers block the
 // popup as not being a direct result of user action.
-async function saveOrderToFirestore(orderId, cart, customer) {
+// Best-effort, non-blocking: the WhatsApp message is the real order record
+// either way, this is just a convenience copy so the owner can look orders
+// up by ID later. Deliberately not awaited before window.open() — that
+// must stay synchronous within the click handler or browsers block the
+// popup as not being a direct result of user action.
+//
+// stockProcessed:false marks a real (non-test) order as still needing its
+// sized stock decremented — firestore.rules only lets the authenticated
+// owner write to /products, so an anonymous checkout session can't do that
+// decrement itself. Instead the admin Orders tab (admin-orders.js) does it
+// from the owner's own logged-in session the next time she opens it. Test
+// orders are saved as already "processed" so they're never touched.
+async function saveOrderToFirestore(orderId, cart, customer, isTest) {
   try {
     await setDoc(doc(db, 'orders', orderId), {
       orderId,
@@ -54,6 +66,8 @@ async function saveOrderToFirestore(orderId, cart, customer) {
       subtotal: cartTotal(cart),
       customer,
       status: 'placed',
+      isTest: !!isTest,
+      stockProcessed: !!isTest,
       createdAt: new Date().toISOString()
     });
   } catch (e) {
@@ -103,6 +117,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const cart = getCart();
   const root = document.getElementById('checkout-root');
 
+  // Test mode is only reachable via ?test=1 in the URL — never a visible
+  // control on the form — so a real customer can never stumble into it.
+  // It still saves the order (tagged isTest, shown as "TEST" in the admin
+  // Orders list) but skips decrementSizeStock entirely.
+  const isTestMode = new URLSearchParams(window.location.search).get('test') === '1';
+  if (isTestMode) {
+    document.getElementById('test-mode-banner').style.display = 'block';
+  }
+
   if (!cart.length) {
     root.innerHTML = `
       <div class="cart-empty">
@@ -132,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartSnapshot = getCart();
     const url = buildWhatsAppUrl(cartSnapshot, customer, orderId);
     const opened = window.open(url, '_blank', 'noopener');
-    saveOrderToFirestore(orderId, cartSnapshot, customer); // fire-and-forget, see comment above
+    saveOrderToFirestore(orderId, cartSnapshot, customer, isTestMode); // fire-and-forget, see comment above
 
     document.getElementById('checkout-form-panel').style.display = 'none';
     const confirmPanel = document.getElementById('confirm-panel');

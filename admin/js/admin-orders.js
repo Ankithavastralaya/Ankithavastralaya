@@ -47,12 +47,53 @@ function buildDispatchMessage(orderId, customerName, courier, trackingId) {
   ].join('\n');
 }
 
+// ---------- stock processing ----------
+// firestore.rules only lets this authenticated owner session write to
+// /products, so a customer's anonymous checkout can't decrement sized
+// stock itself (see checkout.js) — this runs that decrement from here
+// instead, once per real (non-test) order, the first time it's seen.
+async function decrementSizeStock(order) {
+  const sizedItems = (order.items || []).filter(item => item.size && item.productId);
+  await Promise.all(sizedItems.map(async (item) => {
+    try {
+      const ref = doc(db, 'products', item.productId);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) return;
+      const sizes = snap.data().sizes;
+      if (!Array.isArray(sizes)) return;
+      const updated = sizes.map(s => {
+        if (s.label !== item.size) return s;
+        const newStock = Math.max(0, (Number(s.stock) || 0) - item.qty);
+        return { ...s, stock: newStock, status: newStock <= 0 ? 'sold_out' : (s.status || 'in_stock') };
+      });
+      await updateDoc(ref, { sizes: updated });
+    } catch (e) {
+      console.error('Failed to update size stock for', item.productId, item.size, e);
+    }
+  }));
+}
+
+async function processUnprocessedOrders(orders) {
+  // Strictly === false on purpose: orders placed before this feature
+  // existed have no stockProcessed field at all (undefined), and must be
+  // left alone rather than swept up and retroactively decremented — only
+  // orders checkout.js explicitly marked stockProcessed:false are real,
+  // newly-placed orders actually waiting on this.
+  const pending = orders.filter(o => !o.isTest && o.stockProcessed === false);
+  await Promise.all(pending.map(async (order) => {
+    await decrementSizeStock(order);
+    await updateDoc(doc(db, 'orders', order.id), { stockProcessed: true });
+    order.stockProcessed = true;
+  }));
+}
+
 // ---------- all-orders table ----------
 
 async function loadAllOrders() {
   const snap = await getDocs(collection(db, 'orders'));
   const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }))
     .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  await processUnprocessedOrders(orders);
   renderOrdersTable(orders);
 }
 
@@ -64,10 +105,13 @@ function renderOrdersTable(orders) {
   }
   ordersEmpty.style.display = 'none';
   ordersTbody.innerHTML = orders.map(o => {
-    const productIds = (o.items || []).map(item => item.productId).filter(Boolean).join(', ');
+    const productIds = (o.items || [])
+      .filter(item => item.productId)
+      .map(item => item.productId + (item.size ? ` (${item.size})` : ''))
+      .join(', ');
     return `
     <tr>
-      <td>${escapeHtml(o.id)}</td>
+      <td>${escapeHtml(o.id)}${o.isTest ? ' <span class="test-order-badge">TEST</span>' : ''}</td>
       <td class="product-id-cell">${escapeHtml(productIds || '—')}</td>
       <td>${escapeHtml((o.customer && o.customer.name) || '')}</td>
       <td>Rs. ${Number(o.subtotal || 0).toLocaleString('en-IN')}</td>
@@ -119,7 +163,7 @@ function renderOrder(orderId, order) {
 
   resultEl.innerHTML = `
     <div class="order-detail">
-      <h3 style="margin-bottom:4px;">Order ${escapeHtml(orderId)}</h3>
+      <h3 style="margin-bottom:4px;">Order ${escapeHtml(orderId)}${order.isTest ? ' <span class="test-order-badge">TEST — stock not affected</span>' : ''}</h3>
       <p style="color:var(--text-muted); font-size:12.5px; margin-bottom:18px;">Placed: ${order.createdAt ? new Date(order.createdAt).toLocaleString('en-IN') : '—'}</p>
 
       <h4 style="font-size:13px; text-transform:uppercase; letter-spacing:0.03em; color:var(--text-muted); margin-bottom:8px;">Items</h4>
