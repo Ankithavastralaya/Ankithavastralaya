@@ -1,28 +1,45 @@
-// Homepage Order tab: lets the owner arrange the exact order products
-// appear in on the home page. Order is stored as a plain array of product
-// IDs in meta/homeOrder — the storefront (js/catalog.js) sorts by this
-// list, putting anything not yet in it at the end.
+// Homepage Order tab: a photo grid the owner reorders by dragging tiles
+// with the mouse (native HTML5 drag-and-drop, no library). Order is
+// stored as a plain array of product IDs in meta/homeOrder — the
+// storefront (js/catalog.js) sorts by this list, putting anything not
+// yet in it at the end.
 
 import { db } from '../../js/firebase-init.js';
 import { collection, getDocs, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const list = document.getElementById('home-order-list');
 const saveBtn = document.getElementById('home-order-save');
+let draggedTile = null;
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-function rowHTML(product) {
+function makeDraggable(tile) {
+  tile.draggable = true;
+  tile.addEventListener('dragstart', () => {
+    draggedTile = tile;
+    tile.classList.add('dragging');
+  });
+  tile.addEventListener('dragend', () => {
+    tile.classList.remove('dragging');
+    draggedTile = null;
+  });
+  tile.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    if (!draggedTile || draggedTile === tile) return;
+    const rect = tile.getBoundingClientRect();
+    const before = (e.clientX - rect.left) < rect.width / 2;
+    tile.parentNode.insertBefore(draggedTile, before ? tile : tile.nextSibling);
+  });
+}
+
+function tileHTML(product) {
   const photo = (product.photos && product.photos[0]) || '';
   return `
-    <div class="home-order-row" data-id="${product.id}">
+    <div class="home-order-tile" data-id="${product.id}">
       <img src="${escapeHtml(photo)}" alt="">
       <span class="home-order-name">${escapeHtml(product.name)}</span>
-      <div class="home-order-controls">
-        <button type="button" class="home-order-up" aria-label="Move up">&uarr;</button>
-        <button type="button" class="home-order-down" aria-label="Move down">&darr;</button>
-      </div>
     </div>`;
 }
 
@@ -45,23 +62,12 @@ async function loadHomeOrder() {
     list.innerHTML = '<p class="admin-empty-note">No active products yet.</p>';
     return;
   }
-  list.innerHTML = ordered.map(rowHTML).join('');
+  list.innerHTML = ordered.map(tileHTML).join('');
+  list.querySelectorAll('.home-order-tile').forEach(makeDraggable);
 }
 
-list.addEventListener('click', (e) => {
-  const upBtn = e.target.closest('.home-order-up');
-  const downBtn = e.target.closest('.home-order-down');
-  if (!upBtn && !downBtn) return;
-  const row = (upBtn || downBtn).closest('.home-order-row');
-  if (upBtn && row.previousElementSibling) {
-    row.parentNode.insertBefore(row, row.previousElementSibling);
-  } else if (downBtn && row.nextElementSibling) {
-    row.parentNode.insertBefore(row.nextElementSibling, row);
-  }
-});
-
 saveBtn.addEventListener('click', async () => {
-  const ids = Array.from(list.querySelectorAll('.home-order-row')).map(row => row.dataset.id);
+  const ids = Array.from(list.querySelectorAll('.home-order-tile')).map(tile => tile.dataset.id);
   await setDoc(doc(db, 'meta', 'homeOrder'), { ids }, { merge: true });
   showToast('Homepage order saved');
 });
