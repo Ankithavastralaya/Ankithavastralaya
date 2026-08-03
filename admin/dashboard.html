@@ -28,6 +28,7 @@
     <button class="admin-tab" data-tab="instagram" type="button">Trending Videos</button>
     <button class="admin-tab" data-tab="topselling" type="button">Top Selling</button>
     <button class="admin-tab" data-tab="homeorder" type="button">Product Order</button>
+    <button class="admin-tab" data-tab="announcement" type="button">Announcement</button>
   </nav>
 
   <!-- ---------- PRODUCTS ---------- -->
@@ -294,6 +295,21 @@
       <button type="button" class="btn btn-primary" id="home-order-save">Save Order</button>
     </div>
   </section>
+
+  <!-- ---------- ANNOUNCEMENT BANNER ---------- -->
+  <section class="admin-panel" id="panel-announcement">
+    <div class="admin-panel-head"><h2>Announcement Banner</h2></div>
+    <p class="admin-empty-note" style="padding-top:0;">Shows as a scrolling banner at the top of every page on the live site. Delete it (or save it empty) to hide the banner entirely.</p>
+    <div class="field">
+      <label for="announcement-text">Announcement Text</label>
+      <textarea id="announcement-text" rows="3" placeholder="e.g. Free shipping on orders above Rs. 2,000 this week!"></textarea>
+    </div>
+    <div class="admin-form-actions">
+      <button type="button" class="btn btn-primary" id="announcement-save-btn">Save Announcement</button>
+      <button type="button" class="btn btn-ghost" id="announcement-delete-btn" style="color:var(--maroon); border-color:var(--maroon);">Delete Announcement</button>
+    </div>
+    <p class="admin-empty-note" id="announcement-status"></p>
+  </section>
 </div>
 
 <div id="toast"></div>
@@ -315,5 +331,6 @@
 <script type="module" src="js/admin-instagram.js"></script>
 <script type="module" src="js/admin-top-selling.js"></script>
 <script type="module" src="js/admin-home-order.js"></script>
+<script type="module" src="js/admin-announcement.js"></script>
 </body>
 </html>
