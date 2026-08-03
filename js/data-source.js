@@ -61,6 +61,19 @@ const DataSource = {
     }
   },
 
+  // Owner-defined per-category product order (admin's Product Order tab) —
+  // meta/categoryOrder holds one product-ID array per category slug as a
+  // field on the same doc, so adding a new category never touches the
+  // others' saved order.
+  async getCategoryOrder(category) {
+    try {
+      const snap = await getDoc(doc(db, 'meta', 'categoryOrder'));
+      return snap.exists() ? (snap.data()[category] || []) : [];
+    } catch (e) {
+      return [];
+    }
+  },
+
   // The owner's 4 hand-picked "Top Selling" products (admin's Top Selling
   // tab) — any mix of categories, or all one category, her call.
   async getTopSellingIds() {

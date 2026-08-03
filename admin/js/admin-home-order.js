@@ -1,15 +1,28 @@
-// Homepage Order tab: a photo grid the owner reorders by dragging tiles
-// with the mouse (native HTML5 drag-and-drop, no library). Order is
-// stored as a plain array of product IDs in meta/homeOrder — the
-// storefront (js/catalog.js) sorts by this list, putting anything not
-// yet in it at the end.
+// Product Order tab: a photo grid the owner reorders by dragging tiles
+// with the mouse (native HTML5 drag-and-drop, no library). Scope buttons
+// switch between the home page and each category — home order is stored
+// as a plain array of product IDs in meta/homeOrder, category orders are
+// stored as sibling fields on meta/categoryOrder (one array per category
+// slug). The storefront (js/catalog.js) sorts by whichever list applies,
+// putting anything not yet in it at the end.
 
 import { db } from '../../js/firebase-init.js';
 import { collection, getDocs, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
+const CATEGORY_LABELS = {
+  sarees: 'Sarees',
+  unstitched: 'Dress Materials',
+  readymade: 'Ready-Made Dresses',
+  jewellery: 'Jewellery'
+};
+
 const list = document.getElementById('home-order-list');
 const saveBtn = document.getElementById('home-order-save');
+const scopeRow = document.getElementById('order-scope-row');
+const scopeNote = document.getElementById('order-scope-note');
 let draggedTile = null;
+let currentScope = 'home';
+let allProductsCache = null;
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -43,15 +56,26 @@ function tileHTML(product) {
     </div>`;
 }
 
-async function loadHomeOrder() {
-  const [productsSnap, orderSnap] = await Promise.all([
-    getDocs(collection(db, 'products')),
-    getDoc(doc(db, 'meta', 'homeOrder'))
-  ]);
-  const products = productsSnap.docs
-    .map(d => ({ id: d.id, ...d.data() }))
-    .filter(p => p.active !== false);
-  const savedOrder = orderSnap.exists() ? (orderSnap.data().ids || []) : [];
+async function getAllProductsCached() {
+  if (!allProductsCache) {
+    const snap = await getDocs(collection(db, 'products'));
+    allProductsCache = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => p.active !== false);
+  }
+  return allProductsCache;
+}
+
+async function loadOrder(scope) {
+  const all = await getAllProductsCached();
+  const products = scope === 'home' ? all : all.filter(p => p.category === scope);
+
+  let savedOrder = [];
+  if (scope === 'home') {
+    const snap = await getDoc(doc(db, 'meta', 'homeOrder'));
+    savedOrder = snap.exists() ? (snap.data().ids || []) : [];
+  } else {
+    const snap = await getDoc(doc(db, 'meta', 'categoryOrder'));
+    savedOrder = snap.exists() ? (snap.data()[scope] || []) : [];
+  }
 
   const byId = new Map(products.map(p => [p.id, p]));
   const ordered = [];
@@ -59,17 +83,33 @@ async function loadHomeOrder() {
   byId.forEach(p => ordered.push(p));
 
   if (!ordered.length) {
-    list.innerHTML = '<p class="admin-empty-note">No active products yet.</p>';
+    list.innerHTML = '<p class="admin-empty-note">No active products in this section yet.</p>';
     return;
   }
   list.innerHTML = ordered.map(tileHTML).join('');
   list.querySelectorAll('.home-order-tile').forEach(makeDraggable);
 }
 
+scopeRow.querySelectorAll('.order-status-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    scopeRow.querySelectorAll('.order-status-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentScope = btn.dataset.scope;
+    scopeNote.textContent = currentScope === 'home'
+      ? "Drag a product to reorder it — this is the order they'll show on the home page. New products you haven't arranged yet appear at the end until you place them. Don't forget Save."
+      : `Drag a product to reorder it — this is the order they'll show on the ${CATEGORY_LABELS[currentScope]} category page. New products you haven't arranged yet appear at the end until you place them. Don't forget Save.`;
+    loadOrder(currentScope);
+  });
+});
+
 saveBtn.addEventListener('click', async () => {
   const ids = Array.from(list.querySelectorAll('.home-order-tile')).map(tile => tile.dataset.id);
-  await setDoc(doc(db, 'meta', 'homeOrder'), { ids }, { merge: true });
-  showToast('Homepage order saved');
+  if (currentScope === 'home') {
+    await setDoc(doc(db, 'meta', 'homeOrder'), { ids }, { merge: true });
+  } else {
+    await setDoc(doc(db, 'meta', 'categoryOrder'), { [currentScope]: ids }, { merge: true });
+  }
+  showToast('Order saved');
 });
 
 function showToast(msg) {
@@ -80,4 +120,4 @@ function showToast(msg) {
   showToast._t = setTimeout(() => toast.classList.remove('show'), 2800);
 }
 
-document.addEventListener('DOMContentLoaded', loadHomeOrder);
+document.addEventListener('DOMContentLoaded', () => loadOrder('home'));

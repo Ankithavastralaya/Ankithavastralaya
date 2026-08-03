@@ -139,10 +139,11 @@ function setupQuickViewVisibility(container) {
   container.querySelectorAll('.product-card-photo').forEach(photo => observer.observe(photo));
 }
 
-// Sorts by the owner's saved homepage order (admin's Homepage Order tab);
-// anything not in that list yet — a brand-new product — is appended at
-// the end, in whatever order DataSource returned it, instead of vanishing.
-function applyHomeOrder(products, orderIds) {
+// Sorts by the owner's saved order for this section (admin's Product Order
+// tab — home page or a specific category); anything not in that list yet —
+// a brand-new product — is appended at the end, in whatever order
+// DataSource returned it, instead of vanishing.
+function applyOrder(products, orderIds) {
   const byId = new Map(products.map(p => [p.id, p]));
   const ordered = [];
   orderIds.forEach(id => {
@@ -159,7 +160,7 @@ async function initHomeFeatured() {
     DataSource.getAllProducts(),
     DataSource.getHomeOrder()
   ]);
-  renderProductGrid('featured-grid', applyHomeOrder(all, orderIds));
+  renderProductGrid('featured-grid', applyOrder(all, orderIds));
 
   const toggle = document.getElementById('grid-view-toggle');
   if (toggle) {
@@ -207,8 +208,11 @@ async function initCategoryPage() {
   // see the full collection without picking through selections first;
   // availability is still clear from each card's In Stock/Pre-Order/Sold
   // Out badge.
-  const products = await DataSource.getProductsByCategory(cat);
-  renderProductGrid('product-grid', products);
+  const [products, orderIds] = await Promise.all([
+    DataSource.getProductsByCategory(cat),
+    cat ? DataSource.getCategoryOrder(cat) : Promise.resolve([])
+  ]);
+  renderProductGrid('product-grid', cat ? applyOrder(products, orderIds) : products);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
