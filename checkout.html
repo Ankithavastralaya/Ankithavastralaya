@@ -48,18 +48,23 @@
     <h2>Checkout</h2>
   </div>
   <div class="test-mode-banner" id="test-mode-banner" style="display:none;">
-    TEST MODE — this order will be saved but won't touch product stock or sold-out status.
+    TEST MODE — using Razorpay test keys, no real money moves, and this order won't touch product stock.
   </div>
   <div id="checkout-root">
     <div class="checkout-grid" id="checkout-form-panel">
       <div>
         <div class="checkout-note">
-          No online payment here — after you place your order via WhatsApp, we'll reply in the same chat with our UPI QR code and the final bill amount. No returns/replacements and no COD on orders.
+          Secure payment via Razorpay — card, UPI, netbanking or wallet. See our <a href="policies.html#refund" target="_blank" rel="noopener">Refund &amp; Cancellation Policy</a> for return eligibility.
         </div>
         <form id="checkout-form" novalidate>
           <div class="field" data-field="name">
             <label for="f-name">Name <span class="required">*</span></label>
             <input id="f-name" type="text" required>
+            <div class="field-error"></div>
+          </div>
+          <div class="field" data-field="email">
+            <label for="f-email">Email <span class="required">*</span></label>
+            <input id="f-email" type="email" required>
             <div class="field-error"></div>
           </div>
           <div class="field" data-field="phone">
@@ -86,7 +91,8 @@
             <label for="f-notes">Notes (optional)</label>
             <textarea id="f-notes" rows="2" placeholder="Any special request (e.g. blouse stitching, gift wrap)"></textarea>
           </div>
-          <button type="submit" class="btn btn-primary btn-block">Place Order via WhatsApp</button>
+          <p class="checkout-pay-error" id="checkout-pay-error" style="display:none;"></p>
+          <button type="submit" class="btn btn-primary btn-block" id="pay-btn">Pay Now</button>
         </form>
       </div>
       <div class="order-summary">
@@ -100,23 +106,34 @@
     </div>
 
     <div class="confirm-panel" id="confirm-panel" style="display:none;">
-      <h2>Order sent!</h2>
-      <p>Your Order ID is <b id="confirm-order-id"></b> — keep it handy in case you need to follow up with us.</p>
-      <p>A WhatsApp chat should have opened with your order details filled in — just tap <b>Send</b> there to confirm your order. We'll reply in that same chat with our payment QR code and final bill amount.</p>
-      <a href="#" id="confirm-wa-link" class="btn btn-gold" target="_blank" rel="noopener">Open WhatsApp Again</a>
-      <p id="confirm-fallback-note" style="display:none; color:var(--maroon); margin-top:16px;">
-        It looks like your browser blocked the WhatsApp pop-up — tap the button above to open it manually.
-      </p>
+      <h2>Payment successful!</h2>
+      <p>Your Order ID is <b id="confirm-order-id"></b> — keep it handy in case you need to follow up with us. A receipt has been sent to your email.</p>
+      <a href="index.html" class="btn btn-gold">Continue Shopping</a>
     </div>
   </div>
 </section>
 
 <footer>
   <b>Ankitha Vastralaya</b> — Women's Exclusive Clothing &amp; Jewellery
+  <div class="footer-address">Dn 115, 5th Floor, Sun Shine Castle, Currency Nagar, Ramavarapadu, Vijayawada 521108</div>
   <div class="footer-contact">
     <a href="https://wa.me/918500907070" target="_blank" rel="noopener">WhatsApp: 85009 07070</a>
     <span class="sep" aria-hidden="true">&middot;</span>
     <a href="mailto:ankithavastralaya@gmail.com">ankithavastralaya@gmail.com</a>
+  </div>
+  <form class="footer-newsletter" id="newsletter-form">
+    <input type="email" id="newsletter-email" placeholder="Email for updates" required>
+    <button type="submit" class="btn btn-gold btn-small">Subscribe</button>
+  </form>
+  <p class="footer-newsletter-msg" id="newsletter-msg"></p>
+  <div class="footer-links">
+    <a href="policies.html#terms">Terms</a>
+    <span class="sep" aria-hidden="true">&middot;</span>
+    <a href="policies.html#privacy">Privacy</a>
+    <span class="sep" aria-hidden="true">&middot;</span>
+    <a href="policies.html#shipping">Shipping</a>
+    <span class="sep" aria-hidden="true">&middot;</span>
+    <a href="policies.html#refund">Refund &amp; Cancellation</a>
   </div>
 </footer>
 
@@ -124,8 +141,11 @@
 
 <script src="js/cart.js"></script>
 <script src="js/wishlist.js"></script>
+<script type="module" src="js/wishlist-notify.js"></script>
+<script type="module" src="js/newsletter.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/whatsapp-float.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script type="module" src="js/checkout.js"></script>
 </body>
 </html>

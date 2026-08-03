@@ -17,6 +17,9 @@ function getWishlist() {
 function saveWishlist(list) {
   localStorage.setItem(WISHLIST_KEY, JSON.stringify(list));
   updateWishlistBadge();
+  // js/wishlist-notify.js (a module, loaded separately) exposes this —
+  // guarded the same way as syncWishlistCount above.
+  if (typeof window.updateNotifyBar === 'function') window.updateNotifyBar();
 }
 
 function isWishlisted(productId) {
@@ -26,14 +29,21 @@ function isWishlisted(productId) {
 function toggleWishlist(productId) {
   const list = getWishlist();
   const idx = list.indexOf(productId);
+  let active;
   if (idx === -1) {
     list.push(productId);
-    saveWishlist(list);
-    return true;
+    active = true;
+  } else {
+    list.splice(idx, 1);
+    active = false;
   }
-  list.splice(idx, 1);
   saveWishlist(list);
-  return false;
+  // js/wishlist-sync.js (a module, loaded separately) exposes this — guard
+  // in case a page doesn't include it, so the local wishlist still works.
+  if (typeof window.syncWishlistCount === 'function') {
+    window.syncWishlistCount(productId, active);
+  }
+  return active;
 }
 
 function updateWishlistBadge() {

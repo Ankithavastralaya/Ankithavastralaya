@@ -170,9 +170,18 @@ function renderOrder(orderId, order) {
       ${items}
       <div class="order-summary-total" style="margin-top:10px;"><span>Subtotal</span><span>Rs. ${Number(order.subtotal || 0).toLocaleString('en-IN')}</span></div>
 
+      <h4 style="font-size:13px; text-transform:uppercase; letter-spacing:0.03em; color:var(--text-muted); margin:20px 0 8px;">Payment</h4>
+      <p style="font-size:13.5px; line-height:1.7;">
+        ${order.paymentId ? `<span style="color:var(--success); font-weight:600;">&#10003; Paid</span> via Razorpay<br>
+        Payment ID: ${escapeHtml(order.paymentId)}<br>
+        Paid: ${order.paidAt ? new Date(order.paidAt).toLocaleString('en-IN') : '—'}`
+        : '<span style="color:var(--text-muted);">No payment record on this order (placed before Razorpay went live, or a test order).</span>'}
+      </p>
+
       <h4 style="font-size:13px; text-transform:uppercase; letter-spacing:0.03em; color:var(--text-muted); margin:20px 0 8px;">Customer</h4>
       <p style="font-size:13.5px; line-height:1.7;">
         ${escapeHtml(customer.name || '')}<br>
+        ${customer.email ? `${escapeHtml(customer.email)}<br>` : ''}
         ${escapeHtml(customer.phone || '')}<br>
         ${escapeHtml(customer.address || '')}<br>
         ${escapeHtml(customer.city || '')} — ${escapeHtml(customer.pincode || '')}

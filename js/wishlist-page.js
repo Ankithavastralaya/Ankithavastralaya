@@ -8,15 +8,20 @@ async function loadWishlistProducts() {
   return products.filter(Boolean);
 }
 
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 function wishlistRowHTML(product) {
   const photo = product.photos && product.photos[0] ? product.photos[0] : '';
   const priceText = 'Rs. ' + product.price.toLocaleString('en-IN');
   const soldOut = product.stockStatus === 'sold_out';
+  const name = escapeHtml(product.name);
   return `
     <div class="cart-row wishlist-row" data-id="${product.id}">
-      <a href="product.html?id=${encodeURIComponent(product.id)}"><img class="cart-row-photo" src="${photo}" alt="${product.name}"></a>
+      <a href="product.html?id=${encodeURIComponent(product.id)}"><img class="cart-row-photo" src="${photo}" alt="${name}"></a>
       <div class="cart-row-info">
-        <a href="product.html?id=${encodeURIComponent(product.id)}"><div class="cart-row-name">${product.name}</div></a>
+        <a href="product.html?id=${encodeURIComponent(product.id)}"><div class="cart-row-name">${name}</div></a>
         <div class="cart-row-stock ${product.stockStatus}">${stockBadgeLabel(product.stockStatus)}</div>
         <div class="cart-row-price">${priceText}</div>
       </div>

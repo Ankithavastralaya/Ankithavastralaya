@@ -77,15 +77,16 @@ function openQuickView(product) {
   const sizeChipsHTML = product.category === 'readymade' ? qvSizeChipsHTML(sortSizesCanonical(normalizeSizes(product.sizes))) : '';
   const requiresSize = !!sizeChipsHTML;
 
+  const name = escapeHtmlAttr(product.name);
   modal.querySelector('#quickview-body').innerHTML = `
-    <div class="quickview-photo"><img src="${photo}" alt="${product.name}"></div>
+    <div class="quickview-photo"><img src="${photo}" alt="${name}"></div>
     <div class="quickview-info">
-      <div class="pd-cat">${DataSource.categoryLabel(product.category)}</div>
-      <h3 class="quickview-name">${product.name}</h3>
+      <div class="pd-cat">${escapeHtmlAttr(DataSource.categoryLabel(product.category))}</div>
+      <h3 class="quickview-name">${name}</h3>
       <div class="pd-price">${priceText}</div>
       <span class="pd-badge ${product.stockStatus}">${badgeLabel}</span>
       ${attrRows.length ? `<table class="attr-table">${attrRows.map(([k, v]) =>
-        `<tr><td>${k}</td><td>${v}</td></tr>`
+        `<tr><td>${escapeHtmlAttr(k)}</td><td>${escapeHtmlAttr(v)}</td></tr>`
       ).join('')}</table>` : ''}
       ${!soldOut ? sizeChipsHTML : ''}
       ${soldOut ? `

@@ -7,7 +7,23 @@ function productHasSizes(product) {
   return product.category === 'readymade' && normalizeSizes(product.sizes).length > 0;
 }
 
-const WISHLIST_HEART_SVG = `<svg viewBox="0 0 24 24"><path d="M20.8 4.6c-1.8-1.8-4.7-1.8-6.5 0L12 6.9l-2.3-2.3c-1.8-1.8-4.7-1.8-6.5 0-1.8 1.8-1.8 4.7 0 6.5L12 20.8l8.8-8.8c1.8-1.8 1.8-4.7 0-6.5z"/></svg>`;
+const WISHLIST_HEART_SVG = `<svg class="icon-heart" viewBox="0 0 24 24"><path d="M20.8 4.6c-1.8-1.8-4.7-1.8-6.5 0L12 6.9l-2.3-2.3c-1.8-1.8-4.7-1.8-6.5 0-1.8 1.8-1.8 4.7 0 6.5L12 20.8l8.8-8.8c1.8-1.8 1.8-4.7 0-6.5z"/></svg>`;
+// Persian cat: round face, pointed ears, whiskers.
+const WISHLIST_CAT_SVG = `<svg class="icon-cat" viewBox="0 0 24 24"><path d="M6 8 4 3l5 3.5" fill="#f2c078" stroke="#f2c078" stroke-width="1.4" stroke-linejoin="round"/><path d="M18 8l2-5-5 3.5" fill="#f2c078" stroke="#f2c078" stroke-width="1.4" stroke-linejoin="round"/><circle cx="12" cy="13.5" r="7" fill="#f2c078"/><circle cx="9.2" cy="13" r="1" fill="#2a1a12"/><circle cx="14.8" cy="13" r="1" fill="#2a1a12"/><path d="M11.3 15.7h1.4L12 16.7z" fill="#c76b6b"/><path d="M12 16.7q-1 1-2.1.4M12 16.7q1 1 2.1.4" stroke="#2a1a12" stroke-width="0.7" fill="none" stroke-linecap="round"/><path d="M1.5 13.2 6.3 13.6M1.8 15.6 6.4 14.7M22.5 13.2 17.7 13.6M22.2 15.6 17.6 14.7" stroke="#2a1a12" stroke-width="0.6" stroke-linecap="round"/></svg>`;
+// Shih Tzu: floppy ears, fur bangs, flat snout.
+const WISHLIST_DOG_SVG = `<svg class="icon-dog" viewBox="0 0 24 24"><ellipse cx="4.3" cy="13" rx="2.5" ry="4" fill="#c9a876" transform="rotate(-15 4.3 13)"/><ellipse cx="19.7" cy="13" rx="2.5" ry="4" fill="#c9a876" transform="rotate(15 19.7 13)"/><circle cx="12" cy="13.5" r="7.5" fill="#f5e6d3"/><path d="M6.7 9Q9 5.8 12 6.8Q15 5.8 17.3 9" stroke="#c9a876" stroke-width="1.5" fill="none" stroke-linecap="round"/><circle cx="9.3" cy="13.5" r="1" fill="#2a1a12"/><circle cx="14.7" cy="13.5" r="1" fill="#2a1a12"/><ellipse cx="12" cy="16.3" rx="1.2" ry="0.9" fill="#2a1a12"/><path d="M12 17.2q-1.1 1-2.2.3M12 17.2q1.1 1 2.2.3" stroke="#2a1a12" stroke-width="0.7" fill="none" stroke-linecap="round"/></svg>`;
+
+function randomPet() {
+  return Math.random() < 0.5 ? 'cat' : 'dog';
+}
+
+// Product fields are admin-entered (products are write-locked to the
+// owner's account in firestore.rules), but they still render into every
+// visitor's browser — escaping means a stray "<" or "&" in a pasted name/
+// description can't break the page or inject markup.
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
 
 function productCardHTML(product) {
   const badgeLabel = stockBadgeLabel(product.stockStatus);
@@ -16,17 +32,18 @@ function productCardHTML(product) {
   const design = product.attributes && product.attributes.design ? product.attributes.design : '';
   const soldOut = product.stockStatus === 'sold_out';
   const wished = isWishlisted(product.id);
+  const name = escapeHtml(product.name);
   return `
     <div class="product-card ${soldOut ? 'sold_out' : ''}">
       <a href="product.html?id=${encodeURIComponent(product.id)}" class="product-card-photo">
-        <img src="${photo}" alt="${product.name}" loading="lazy">
+        <img src="${photo}" alt="${name}" loading="lazy">
         <span class="stock-badge ${product.stockStatus}">${badgeLabel}</span>
-        <button class="wishlist-btn ${wished ? 'active' : ''}" data-id="${product.id}" type="button" aria-label="${wished ? 'Remove from wishlist' : 'Add to wishlist'}">${WISHLIST_HEART_SVG}</button>
+        <button class="wishlist-btn ${wished ? 'active' : ''}" data-id="${product.id}" data-pet="${randomPet()}" type="button" aria-label="${wished ? 'Remove from wishlist' : 'Add to wishlist'}">${WISHLIST_HEART_SVG}${WISHLIST_CAT_SVG}${WISHLIST_DOG_SVG}</button>
         <button class="product-card-quickview" data-id="${product.id}" type="button" aria-label="Quick view">Quick View</button>
       </a>
       <div class="product-card-body">
-        <a href="product.html?id=${encodeURIComponent(product.id)}"><h3 class="product-card-name">${product.name}</h3></a>
-        ${design ? `<div class="product-card-design">${design}</div>` : ''}
+        <a href="product.html?id=${encodeURIComponent(product.id)}"><h3 class="product-card-name">${name}</h3></a>
+        ${design ? `<div class="product-card-design">${escapeHtml(design)}</div>` : ''}
         <div class="product-card-divider"></div>
         <div class="product-card-price">${priceText}</div>
         ${!soldOut ? `
@@ -52,6 +69,7 @@ function renderProductGrid(containerId, products) {
       e.preventDefault();
       e.stopPropagation();
       const active = toggleWishlist(btn.dataset.id);
+      if (active) btn.dataset.pet = randomPet();
       btn.classList.toggle('active', active);
       btn.setAttribute('aria-label', active ? 'Remove from wishlist' : 'Add to wishlist');
       showToast(active ? 'Added to Wishlist' : 'Removed from Wishlist');

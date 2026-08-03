@@ -24,6 +24,7 @@
   <nav class="admin-tabs">
     <button class="admin-tab active" data-tab="products" type="button">Products</button>
     <button class="admin-tab" data-tab="orders" type="button">Orders</button>
+    <button class="admin-tab" data-tab="wishlist" type="button">Wishlist Insights</button>
     <button class="admin-tab" data-tab="instagram" type="button">Trending Videos</button>
     <button class="admin-tab" data-tab="topselling" type="button">Top Selling</button>
     <button class="admin-tab" data-tab="homeorder" type="button">Homepage Order</button>
@@ -213,6 +214,29 @@
     <p class="admin-empty-note" id="orders-empty" style="display:none;">No orders yet.</p>
   </section>
 
+  <!-- ---------- WISHLIST INSIGHTS ---------- -->
+  <section class="admin-panel" id="panel-wishlist">
+    <div class="admin-panel-head"><h2>Wishlist Insights</h2></div>
+    <p class="admin-empty-note" style="padding-top:0;">How many customers currently have each product wishlisted, most-wishlisted first — a demand signal for what to restock. Counts adjust live as customers add/remove items; a sold-out product with a high count is a strong restock candidate.</p>
+    <table class="admin-table" id="wishlist-table">
+      <thead>
+        <tr><th>Photo</th><th>Product</th><th>Category</th><th>Stock</th><th>Wishlisted By</th></tr>
+      </thead>
+      <tbody id="wishlist-tbody"></tbody>
+    </table>
+    <p class="admin-empty-note" id="wishlist-empty" style="display:none;">No products wishlisted yet.</p>
+
+    <h3 style="margin:28px 0 14px; font-size:16px;">Notify Me Requests</h3>
+    <p class="admin-empty-note" style="padding-top:0;">Customers who opted in for a heads-up when their wishlist items are back in stock — reach out to them yourself once you've restocked.</p>
+    <table class="admin-table" id="notify-requests-table">
+      <thead>
+        <tr><th>Email</th><th>Phone</th><th>Products Wanted</th><th>Requested</th></tr>
+      </thead>
+      <tbody id="notify-requests-tbody"></tbody>
+    </table>
+    <p class="admin-empty-note" id="notify-requests-empty" style="display:none;">No notify requests yet.</p>
+  </section>
+
   <!-- ---------- TRENDING VIDEOS ---------- -->
   <section class="admin-panel" id="panel-instagram">
     <div class="admin-panel-head"><h2>Trending Videos</h2></div>
@@ -266,6 +290,7 @@
 <script type="module" src="js/admin-auth.js"></script>
 <script type="module" src="js/admin-products.js"></script>
 <script type="module" src="js/admin-orders.js"></script>
+<script type="module" src="js/admin-wishlist-insights.js"></script>
 <script type="module" src="js/admin-instagram.js"></script>
 <script type="module" src="js/admin-top-selling.js"></script>
 <script type="module" src="js/admin-home-order.js"></script>

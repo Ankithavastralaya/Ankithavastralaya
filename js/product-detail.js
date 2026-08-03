@@ -76,6 +76,15 @@ function buildAttributeRows(attributes) {
   return rows;
 }
 
+// Product name/description/attributes are admin-entered today (products
+// are write-locked to the owner's account in firestore.rules), but they
+// still render into every visitor's browser — escaping here means one
+// stray "<" or "&" in a pasted description can't break the page or, if
+// this ever becomes editable by anyone else, can't inject markup.
+function escapeAttrPair([k, v]) {
+  return [escapeHtmlAttr(k), escapeHtmlAttr(v)];
+}
+
 function renderProductNotFound(root) {
   root.innerHTML = `
     <div class="empty-state">
@@ -110,18 +119,18 @@ function renderProduct(product) {
         ${galleryItems.length > 1 ? `<div class="pd-thumbs">${galleryItems.map((item, i) =>
           item.type === 'video'
             ? `<div class="pd-thumb-video ${i === 0 ? 'active' : ''}" data-index="${i}"><span class="insta-play-icon">&#9658;</span></div>`
-            : `<img src="${item.src}" data-index="${i}" class="${i === 0 ? 'active' : ''}" alt="${product.name} photo ${i + 1}">`
+            : `<img src="${item.src}" data-index="${i}" class="${i === 0 ? 'active' : ''}" alt="${escapeHtmlAttr(product.name)} photo ${i + 1}">`
         ).join('')}</div>` : ''}
       </div>
       <div class="pd-info">
-        <div class="pd-cat">${DataSource.categoryLabel(product.category)}</div>
-        <h1 class="pd-name">${product.name}</h1>
+        <div class="pd-cat">${escapeHtmlAttr(DataSource.categoryLabel(product.category))}</div>
+        <h1 class="pd-name">${escapeHtmlAttr(product.name)}</h1>
         <div class="pd-price">${priceText}</div>
         <span class="pd-badge ${product.stockStatus}">${badgeLabel}</span>
         <p class="pd-note">${stockNote}</p>
-        <p class="pd-desc">${product.description || ''}</p>
+        <p class="pd-desc">${escapeHtmlAttr(product.description || '')}</p>
         ${buildHighlightsHTML(product.highlights)}
-        ${attrRows.length ? `<table class="attr-table">${attrRows.map(([k, v]) =>
+        ${attrRows.length ? `<table class="attr-table">${attrRows.map(escapeAttrPair).map(([k, v]) =>
           `<tr><td>${k}</td><td>${v}</td></tr>`
         ).join('')}</table>` : ''}
         ${!soldOut ? sizeChipsHTML : ''}

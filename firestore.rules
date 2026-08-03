@@ -12,10 +12,61 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == "tNfVvBbInHZypfFIj0uFgdPkQBb2";
     }
 
+    // Orders are only ever created by the verifyRazorpayPayment Cloud
+    // Function (functions/index.js), using the Admin SDK — which bypasses
+    // these rules entirely. So the client needs no write path here at all
+    // any more; this closes the "fake order price" gap completely instead
+    // of just validating its shape, because there's no longer any way for
+    // a customer's browser to write an order document, period.
     match /orders/{orderId} {
-      allow create: if true;
+      allow read, write: if request.auth != null && request.auth.uid == "tNfVvBbInHZypfFIj0uFgdPkQBb2";
+    }
+
+    // pendingOrders and mail are internal bookkeeping written only by the
+    // Cloud Functions' Admin SDK (which bypasses these rules) — no client
+    // ever reads or writes either collection, so they fall through to the
+    // catch-all deny-all rule at the bottom on purpose.
+
+    // Aggregate wishlist counts only (no customer identity) — a customer's
+    // browser increments/decrements its own product's counter when they
+    // toggle the heart; only the owner can read the counts back (restock
+    // decisions in the admin panel). Writes are restricted to exactly a
+    // +1/-1 step on the count field so this can only be used the way the
+    // app actually uses it, not set to an arbitrary number directly.
+    match /wishlistCounts/{productId} {
+      allow read: if request.auth != null && request.auth.uid == "tNfVvBbInHZypfFIj0uFgdPkQBb2";
+      allow create: if request.resource.data.keys().hasOnly(['count'])
+        && request.resource.data.count == 1;
+      allow update: if request.resource.data.keys().hasOnly(['count'])
+        && request.resource.data.count is number
+        && (request.resource.data.count == resource.data.count + 1
+            || request.resource.data.count == resource.data.count - 1);
+      allow delete: if false;
+    }
+
+    // Customer-submitted "notify me about my wishlist" contact requests —
+    // same public-create/owner-read-only shape as /orders, with basic
+    // shape/size validation.
+    match /notifyRequests/{requestId} {
+      allow create: if request.resource.data.keys().hasOnly(['email', 'phone', 'productIds', 'createdAt'])
+        && request.resource.data.productIds is list
+        && request.resource.data.productIds.size() <= 50
+        && (request.resource.data.email == null
+            || (request.resource.data.email is string && request.resource.data.email.size() <= 200))
+        && (request.resource.data.phone == null
+            || (request.resource.data.phone is string && request.resource.data.phone.size() <= 30));
       allow read, update: if request.auth != null && request.auth.uid == "tNfVvBbInHZypfFIj0uFgdPkQBb2";
       allow delete: if false;
+    }
+
+    // Footer "email updates" opt-in list — public-create, owner-read-only,
+    // same shape-validated pattern as notifyRequests.
+    match /newsletterSubscribers/{subId} {
+      allow create: if request.resource.data.keys().hasOnly(['email', 'createdAt'])
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 200;
+      allow read: if request.auth != null && request.auth.uid == "tNfVvBbInHZypfFIj0uFgdPkQBb2";
+      allow update, delete: if false;
     }
 
     match /{document=**} {
