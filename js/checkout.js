@@ -151,6 +151,17 @@ document.addEventListener('DOMContentLoaded', () => {
           confirmPanel.querySelector('#confirm-order-id').textContent = verifyRes.data.orderId;
         } catch (err) {
           console.error('verifyRazorpayPayment failed:', err);
+          if (err.code === 'functions/already-exists') {
+            // The payment succeeded and the order was already created —
+            // just via Razorpay's own webhook winning a race against this
+            // browser call (e.g. a slow connection), not a real failure.
+            clearCart();
+            document.getElementById('checkout-form-panel').style.display = 'none';
+            const confirmPanel = document.getElementById('confirm-panel');
+            confirmPanel.style.display = 'block';
+            confirmPanel.querySelector('#confirm-order-id').textContent = 'in your email receipt';
+            return;
+          }
           showPayError('Payment went through but we could not confirm it automatically — please contact us with your payment ID: ' + response.razorpay_payment_id);
           payBtn.disabled = false;
           payBtn.textContent = 'Pay Now';
