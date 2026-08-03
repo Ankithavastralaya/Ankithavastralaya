@@ -80,14 +80,19 @@
             <textarea id="f-address" rows="3" required></textarea>
             <div class="field-error"></div>
           </div>
-          <div class="field" data-field="pincode">
-            <label for="f-pincode">Pincode <span class="required">*</span></label>
-            <input id="f-pincode" type="text" inputmode="numeric" maxlength="6" required>
-            <div class="field-error"></div>
-          </div>
           <div class="field" data-field="city">
             <label for="f-city">City <span class="required">*</span></label>
             <input id="f-city" type="text" required>
+            <div class="field-error"></div>
+          </div>
+          <div class="field" data-field="pincode">
+            <label for="f-pincode">Pincode / Postal Code <span class="required">*</span></label>
+            <input id="f-pincode" type="text" maxlength="12" required>
+            <div class="field-error"></div>
+          </div>
+          <div class="field" data-field="country">
+            <label for="f-country">Country <span class="required">*</span></label>
+            <input id="f-country" type="text" value="India" required>
             <div class="field-error"></div>
           </div>
           <div class="field">

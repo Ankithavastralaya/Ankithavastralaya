@@ -295,7 +295,8 @@ function renderOrder(orderId, order) {
         ${customer.email ? `${escapeHtml(customer.email)}<br>` : ''}
         ${escapeHtml(customer.phone || '')}<br>
         ${escapeHtml(customer.address || '')}<br>
-        ${escapeHtml(customer.city || '')} — ${escapeHtml(customer.pincode || '')}
+        ${escapeHtml(customer.city || '')} — ${escapeHtml(customer.pincode || '')}<br>
+        ${escapeHtml(customer.country || 'India')}${customer.country && customer.country.trim().toLowerCase() !== 'india' ? ' <span style="color:var(--maroon); font-weight:700;">— INTERNATIONAL</span>' : ''}
         ${customer.notes ? `<br><em>Notes: ${escapeHtml(customer.notes)}</em>` : ''}
       </p>
 

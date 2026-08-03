@@ -43,14 +43,20 @@ function clearFieldError(name) {
 
 function validateForm(customer) {
   let valid = true;
-  ['name', 'email', 'phone', 'address', 'pincode', 'city'].forEach(clearFieldError);
+  ['name', 'email', 'phone', 'address', 'pincode', 'city', 'country'].forEach(clearFieldError);
 
   if (!customer.name.trim()) { showFieldError('name', 'Please enter your name.'); valid = false; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customer.email.trim())) { showFieldError('email', 'Please enter a valid email — your receipt goes here.'); valid = false; }
   const digitsOnly = customer.phone.replace(/\D/g, '');
-  if (!digitsOnly || digitsOnly.length < 10) { showFieldError('phone', 'Please enter a valid 10-digit phone number.'); valid = false; }
+  if (!digitsOnly || digitsOnly.length < 8) { showFieldError('phone', 'Please enter a valid phone number.'); valid = false; }
   if (!customer.address.trim()) { showFieldError('address', 'Please enter your delivery address.'); valid = false; }
-  if (!/^\d{6}$/.test(customer.pincode.trim())) { showFieldError('pincode', 'Please enter a valid 6-digit pincode.'); valid = false; }
+  if (!customer.country.trim()) { showFieldError('country', 'Please enter your country.'); valid = false; }
+  const isIndia = customer.country.trim().toLowerCase() === 'india';
+  if (isIndia) {
+    if (!/^\d{6}$/.test(customer.pincode.trim())) { showFieldError('pincode', 'Please enter a valid 6-digit pincode.'); valid = false; }
+  } else {
+    if (!/^[A-Za-z0-9\s-]{3,12}$/.test(customer.pincode.trim())) { showFieldError('pincode', 'Please enter a valid postal code.'); valid = false; }
+  }
   if (!customer.city.trim()) { showFieldError('city', 'Please enter your city.'); valid = false; }
 
   return valid;
@@ -100,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
       address: document.getElementById('f-address').value,
       pincode: document.getElementById('f-pincode').value,
       city: document.getElementById('f-city').value,
+      country: document.getElementById('f-country').value,
       notes: document.getElementById('f-notes').value
     };
 
