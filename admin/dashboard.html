@@ -198,6 +198,9 @@
   <!-- ---------- ORDERS ---------- -->
   <section class="admin-panel" id="panel-orders">
     <div class="admin-panel-head"><h2>Orders</h2></div>
+
+    <div class="admin-stats-row" id="orders-stats-row"></div>
+
     <div class="order-lookup">
       <input type="text" id="order-search-input" placeholder="Enter Order ID, e.g. AV260730-4821">
       <button class="btn btn-primary btn-small" id="order-search-btn" type="button">Search</button>
@@ -205,9 +208,19 @@
     <div id="order-result"></div>
 
     <h3 style="margin:28px 0 14px; font-size:16px;">All Orders</h3>
+    <div class="orders-filter-row">
+      <input type="text" id="orders-filter-input" placeholder="Filter by Order ID or customer name">
+      <select id="orders-status-filter">
+        <option value="">All statuses</option>
+        <option value="placed">Placed</option>
+        <option value="dispatched">Dispatched</option>
+        <option value="delivered">Delivered</option>
+      </select>
+      <button class="btn btn-ghost btn-small" id="orders-bulk-deliver-btn" type="button" disabled>Mark Selected as Delivered</button>
+    </div>
     <table class="admin-table" id="orders-table">
       <thead>
-        <tr><th>Order ID</th><th>Product ID(s) — pick from rack</th><th>Customer</th><th>Total</th><th>Status</th><th>Placed</th><th>Actions</th></tr>
+        <tr><th><input type="checkbox" id="orders-select-all" aria-label="Select all orders"></th><th>Order ID</th><th>Product ID(s) — pick from rack</th><th>Customer</th><th>Total</th><th>Status</th><th>Placed</th><th>Actions</th></tr>
       </thead>
       <tbody id="orders-tbody"></tbody>
     </table>

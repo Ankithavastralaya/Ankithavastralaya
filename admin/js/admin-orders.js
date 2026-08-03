@@ -22,6 +22,17 @@ const searchBtn = document.getElementById('order-search-btn');
 const resultEl = document.getElementById('order-result');
 const ordersTbody = document.getElementById('orders-tbody');
 const ordersEmpty = document.getElementById('orders-empty');
+const statsRow = document.getElementById('orders-stats-row');
+const filterInput = document.getElementById('orders-filter-input');
+const statusFilter = document.getElementById('orders-status-filter');
+const selectAllCheckbox = document.getElementById('orders-select-all');
+const bulkDeliverBtn = document.getElementById('orders-bulk-deliver-btn');
+
+// Full set loaded from Firestore — the filter row and stats row both work
+// off this in-memory copy rather than re-querying, since the whole table
+// (usually a few dozen orders for a solo shop) is small enough to filter
+// client-side.
+let allOrders = [];
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -94,13 +105,64 @@ async function loadAllOrders() {
   const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }))
     .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
   await processUnprocessedOrders(orders);
-  renderOrdersTable(orders);
+  allOrders = orders;
+  renderStats(allOrders);
+  applyFilters();
+}
+
+// ---------- stats ----------
+
+function renderStats(orders) {
+  const real = orders.filter(o => !o.isTest);
+  const now = new Date();
+  const inThisMonth = (o) => {
+    if (!o.createdAt) return false;
+    const d = new Date(o.createdAt);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  };
+  const thisMonth = real.filter(inThisMonth);
+
+  const totalRevenue = real.reduce((sum, o) => sum + Number(o.subtotal || 0), 0);
+  const monthRevenue = thisMonth.reduce((sum, o) => sum + Number(o.subtotal || 0), 0);
+
+  const cards = [
+    { label: 'Total Orders', value: real.length },
+    { label: 'Total Revenue', value: 'Rs. ' + totalRevenue.toLocaleString('en-IN') },
+    { label: 'Orders This Month', value: thisMonth.length },
+    { label: 'Revenue This Month', value: 'Rs. ' + monthRevenue.toLocaleString('en-IN') }
+  ];
+
+  statsRow.innerHTML = cards.map(c => `
+    <div class="admin-stat-card">
+      <div class="admin-stat-label">${c.label}</div>
+      <div class="admin-stat-value">${c.value}</div>
+    </div>`
+  ).join('');
+}
+
+// ---------- filtering ----------
+
+function applyFilters() {
+  const query = filterInput.value.trim().toLowerCase();
+  const status = statusFilter.value;
+
+  const filtered = allOrders.filter(o => {
+    if (status && o.status !== status && !(status === 'placed' && !o.status)) return false;
+    if (!query) return true;
+    const id = o.id.toLowerCase();
+    const name = ((o.customer && o.customer.name) || '').toLowerCase();
+    return id.includes(query) || name.includes(query);
+  });
+
+  renderOrdersTable(filtered);
 }
 
 function renderOrdersTable(orders) {
+  selectAllCheckbox.checked = false;
   if (!orders.length) {
     ordersTbody.innerHTML = '';
     ordersEmpty.style.display = 'block';
+    updateBulkButtonState();
     return;
   }
   ordersEmpty.style.display = 'none';
@@ -111,6 +173,7 @@ function renderOrdersTable(orders) {
       .join(', ');
     return `
     <tr>
+      <td><input type="checkbox" class="order-row-checkbox" data-id="${escapeHtml(o.id)}" aria-label="Select order ${escapeHtml(o.id)}"></td>
       <td>${escapeHtml(o.id)}${o.isTest ? ' <span class="test-order-badge">TEST</span>' : ''}</td>
       <td class="product-id-cell">${escapeHtml(productIds || '—')}</td>
       <td>${escapeHtml((o.customer && o.customer.name) || '')}</td>
@@ -129,7 +192,38 @@ function renderOrdersTable(orders) {
       resultEl.scrollIntoView({ behavior: 'smooth' });
     });
   });
+
+  ordersTbody.querySelectorAll('.order-row-checkbox').forEach(cb => {
+    cb.addEventListener('change', updateBulkButtonState);
+  });
+  updateBulkButtonState();
 }
+
+// ---------- bulk actions ----------
+
+function getCheckedOrderIds() {
+  return Array.from(ordersTbody.querySelectorAll('.order-row-checkbox:checked')).map(cb => cb.dataset.id);
+}
+
+function updateBulkButtonState() {
+  bulkDeliverBtn.disabled = getCheckedOrderIds().length === 0;
+}
+
+selectAllCheckbox.addEventListener('change', () => {
+  ordersTbody.querySelectorAll('.order-row-checkbox').forEach(cb => { cb.checked = selectAllCheckbox.checked; });
+  updateBulkButtonState();
+});
+
+bulkDeliverBtn.addEventListener('click', async () => {
+  const ids = getCheckedOrderIds();
+  if (!ids.length) return;
+  bulkDeliverBtn.disabled = true;
+  bulkDeliverBtn.textContent = 'Updating…';
+  await Promise.all(ids.map(id => updateDoc(doc(db, 'orders', id), { status: 'delivered' })));
+  bulkDeliverBtn.textContent = 'Mark Selected as Delivered';
+  showToast(`Marked ${ids.length} order${ids.length > 1 ? 's' : ''} as Delivered`);
+  loadAllOrders();
+});
 
 // ---------- single order lookup + detail ----------
 
@@ -254,5 +348,8 @@ function showToast(msg) {
 
 searchBtn.addEventListener('click', searchOrder);
 searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') searchOrder(); });
+
+filterInput.addEventListener('input', applyFilters);
+statusFilter.addEventListener('change', applyFilters);
 
 document.addEventListener('DOMContentLoaded', loadAllOrders);
