@@ -8,7 +8,7 @@
 // since there's no paid WhatsApp Business API here to send it silently.
 
 import { db } from '../../js/firebase-init.js';
-import { collection, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { collection, getDocs, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const STATUSES = [
   { value: 'placed', label: 'Placed' },
@@ -27,6 +27,7 @@ const filterInput = document.getElementById('orders-filter-input');
 const statusFilter = document.getElementById('orders-status-filter');
 const selectAllCheckbox = document.getElementById('orders-select-all');
 const bulkDeliverBtn = document.getElementById('orders-bulk-deliver-btn');
+const bulkDeleteBtn = document.getElementById('orders-bulk-delete-btn');
 
 // Full set loaded from Firestore — the filter row and stats row both work
 // off this in-memory copy rather than re-querying, since the whole table
@@ -206,7 +207,9 @@ function getCheckedOrderIds() {
 }
 
 function updateBulkButtonState() {
-  bulkDeliverBtn.disabled = getCheckedOrderIds().length === 0;
+  const noneChecked = getCheckedOrderIds().length === 0;
+  bulkDeliverBtn.disabled = noneChecked;
+  bulkDeleteBtn.disabled = noneChecked;
 }
 
 selectAllCheckbox.addEventListener('change', () => {
@@ -222,6 +225,20 @@ bulkDeliverBtn.addEventListener('click', async () => {
   await Promise.all(ids.map(id => updateDoc(doc(db, 'orders', id), { status: 'delivered' })));
   bulkDeliverBtn.textContent = 'Mark Selected as Delivered';
   showToast(`Marked ${ids.length} order${ids.length > 1 ? 's' : ''} as Delivered`);
+  loadAllOrders();
+});
+
+bulkDeleteBtn.addEventListener('click', async () => {
+  const ids = getCheckedOrderIds();
+  if (!ids.length) return;
+  const confirmed = confirm(`Permanently delete ${ids.length} order${ids.length > 1 ? 's' : ''}? This cannot be undone.`);
+  if (!confirmed) return;
+  bulkDeleteBtn.disabled = true;
+  bulkDeleteBtn.textContent = 'Deleting…';
+  await Promise.all(ids.map(id => deleteDoc(doc(db, 'orders', id))));
+  bulkDeleteBtn.textContent = 'Delete Selected';
+  showToast(`Deleted ${ids.length} order${ids.length > 1 ? 's' : ''}`);
+  resultEl.innerHTML = '';
   loadAllOrders();
 });
 
