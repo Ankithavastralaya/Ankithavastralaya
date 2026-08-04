@@ -12,7 +12,10 @@ function buildSizeChipsHTML(sizes) {
   if (!Array.isArray(sizes) || !sizes.length) return '';
   return `
     <div class="size-selector" id="size-selector">
-      <div class="size-selector-label">Select Size</div>
+      <div class="size-selector-label-row">
+        <div class="size-selector-label">Select Size</div>
+        ${typeof hasSizeChart === 'function' && hasSizeChart() ? '<button type="button" class="size-chart-link" id="size-chart-open-btn">View Size Chart</button>' : ''}
+      </div>
       <div class="size-chip-row">
         ${sizes.map(s => {
           const status = s.status || ((Number(s.stock) || 0) > 0 ? 'in_stock' : 'sold_out');
@@ -150,6 +153,9 @@ function renderProduct(product) {
       </div>
     </div>`;
 
+  const sizeChartBtn = document.getElementById('size-chart-open-btn');
+  if (sizeChartBtn) sizeChartBtn.addEventListener('click', () => openSizeChartModal());
+
   const galleryMain = root.querySelector('.pd-gallery-main');
   root.querySelectorAll('.pd-thumbs img, .pd-thumbs .pd-thumb-video').forEach(thumb => {
     thumb.addEventListener('click', () => {
@@ -209,7 +215,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!root) return;
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
-  const product = id ? await DataSource.getProductById(id) : null;
+  const [product] = await Promise.all([
+    id ? DataSource.getProductById(id) : Promise.resolve(null),
+    window.sizeChartReady,
+  ]);
   if (!product) {
     renderProductNotFound(root);
     return;

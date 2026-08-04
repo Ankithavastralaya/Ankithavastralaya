@@ -351,7 +351,29 @@ section{ padding:16px 0 56px; }
 .attr-table td{ padding:9px 0; font-size:13.5px; }
 .attr-table td:first-child{ color:var(--text-muted); width:40%; font-weight:600; }
 .size-selector{ margin-bottom:18px; }
-.size-selector-label{ font-size:12.5px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:8px; }
+.size-selector-label-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
+.size-selector-label{ font-size:12.5px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em; }
+.size-chart-link{
+  background:none; border:none; padding:0; font-family:var(--sans); font-size:12px; font-weight:600;
+  color:var(--maroon); text-decoration:underline; cursor:pointer; flex-shrink:0;
+}
+.size-chart-link:hover{ color:var(--ink); }
+
+/* ---------- SIZE CHART MODAL ---------- */
+.size-chart-modal{ display:none; position:fixed; inset:0; z-index:320; }
+.size-chart-modal.open{ display:block; }
+.size-chart-backdrop{ position:absolute; inset:0; background:rgba(36,22,17,0.6); }
+.size-chart-panel{
+  position:relative; z-index:1; background:var(--white); border-radius:var(--radius);
+  max-width:520px; width:min(92vw,520px); max-height:88vh; overflow-y:auto;
+  margin:6vh auto; padding:20px;
+}
+.size-chart-panel img{ width:100%; display:block; border-radius:2px; }
+.size-chart-close{
+  position:absolute; top:10px; right:12px; background:none; border:none;
+  font-size:26px; line-height:1; color:var(--text-muted); cursor:pointer; z-index:2;
+}
+.size-chart-close:hover{ color:var(--ink); }
 .size-chip-row{ display:flex; flex-wrap:wrap; gap:8px; }
 .size-chip{
   min-width:46px; height:40px; padding:0 12px; border:1.5px solid var(--line); border-radius:var(--radius);

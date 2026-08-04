@@ -6,7 +6,10 @@ function qvSizeChipsHTML(sizes) {
   if (!Array.isArray(sizes) || !sizes.length) return '';
   return `
     <div class="size-selector" id="qv-size-selector">
-      <div class="size-selector-label">Select Size</div>
+      <div class="size-selector-label-row">
+        <div class="size-selector-label">Select Size</div>
+        ${typeof hasSizeChart === 'function' && hasSizeChart() ? '<button type="button" class="size-chart-link" id="qv-size-chart-open-btn">View Size Chart</button>' : ''}
+      </div>
       <div class="size-chip-row">
         ${sizes.map(s => {
           const status = s.status || ((Number(s.stock) || 0) > 0 ? 'in_stock' : 'sold_out');
@@ -97,6 +100,9 @@ function openQuickView(product) {
         </div>`}
       <a href="product.html?id=${encodeURIComponent(product.id)}" class="quickview-full-link">View Full Details</a>
     </div>`;
+
+  const qvSizeChartBtn = document.getElementById('qv-size-chart-open-btn');
+  if (qvSizeChartBtn) qvSizeChartBtn.addEventListener('click', () => openSizeChartModal());
 
   if (!soldOut) {
     let selectedSize = null;

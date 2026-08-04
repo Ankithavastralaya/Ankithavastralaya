@@ -105,6 +105,18 @@ const DataSource = {
     } catch (e) {
       return {};
     }
+  },
+
+  // Single size-chart image link (admin's Homepage Media tab), shown next
+  // to the size selector on Ready-Made products. Empty until the owner
+  // sets one, in which case the "View Size Chart" link just doesn't show.
+  async getSizeChart() {
+    try {
+      const snap = await getDoc(doc(db, 'meta', 'sizeChart'));
+      return snap.exists() ? (snap.data().url || '') : '';
+    } catch (e) {
+      return '';
+    }
   }
 };
 

@@ -59,6 +59,15 @@
     <button type="submit" class="btn btn-primary btn-block" id="login-btn">Sign In</button>
     <p class="login-error" id="login-error"></p>
   </form>
+  <div id="otp-section" style="display:none;">
+    <p class="sub" style="margin-top:16px;">Enter the 6-digit code sent to your phone</p>
+    <div class="field">
+      <label for="f-otp">Verification Code</label>
+      <input id="f-otp" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+    </div>
+    <button type="button" class="btn btn-primary btn-block" id="otp-verify-btn">Verify</button>
+  </div>
+  <div id="recaptcha-container"></div>
 </div>
 
 <script>
