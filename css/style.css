@@ -96,8 +96,8 @@ h1,h2,h3{font-family:var(--serif); font-weight:600; font-style:italic; color:var
 .nav-inner{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 24px; }
 @media (max-width:640px){ .nav-inner{ padding:14px 16px; } }
 .nav-logo{ display:flex; align-items:center; }
-.nav-logo img{ height:80px; width:auto; display:block; }
-@media (max-width:480px){ .nav-logo img{ height:64px; } }
+.nav-logo img{ height:92px; width:auto; display:block; }
+@media (max-width:480px){ .nav-logo img{ height:74px; } }
 .nav-menu-wrap{ display:flex; align-items:center; gap:20px; flex-shrink:0; }
 .nav-links{ display:flex; gap:22px; list-style:none; margin:0; padding:0; }
 .nav-links a{
