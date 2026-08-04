@@ -1,8 +1,10 @@
-// Swaps a category tile's outline icon for a real photo when one is
-// configured in js/category-images.js — same "drop a file, add one line"
-// pattern as the hero slideshow.
-function applyCategoryTileImages() {
-  const map = window.CATEGORY_IMAGES || {};
+// Swaps a category tile's outline icon for a real photo when one is set
+// in the admin's Homepage Media tab (meta/categoryImages, read live via
+// DataSource.getCategoryImages). No local files involved — every photo is
+// a direct link the owner pasted in; a category left blank just keeps the
+// plain icon.
+async function applyCategoryTileImages() {
+  const map = await DataSource.getCategoryImages();
   document.querySelectorAll('.cat-tile').forEach(tile => {
     const cat = new URL(tile.href, window.location.href).searchParams.get('cat');
     const photo = cat && map[cat];

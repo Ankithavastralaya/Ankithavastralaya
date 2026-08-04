@@ -26,8 +26,7 @@
     <button class="admin-tab" data-tab="orders" type="button">Orders</button>
     <button class="admin-tab" data-tab="customers" type="button">Customers</button>
     <button class="admin-tab" data-tab="wishlist" type="button">Wishlist Insights</button>
-    <button class="admin-tab" data-tab="instagram" type="button">Trending Videos</button>
-    <button class="admin-tab" data-tab="topselling" type="button">Top Selling</button>
+    <button class="admin-tab" data-tab="homemedia" type="button">Homepage Media</button>
     <button class="admin-tab" data-tab="homeorder" type="button">Product Order</button>
     <button class="admin-tab" data-tab="announcement" type="button">Announcement</button>
   </nav>
@@ -272,8 +271,45 @@
   </section>
 
   <!-- ---------- TRENDING VIDEOS ---------- -->
-  <section class="admin-panel" id="panel-instagram">
-    <div class="admin-panel-head"><h2>Trending Videos</h2></div>
+  <section class="admin-panel" id="panel-homemedia">
+    <div class="admin-panel-head"><h2>Homepage Media</h2></div>
+    <p class="admin-empty-note" style="padding-top:0;">Everything on this page works the same way: paste a direct link (photos and videos hosted on ImageKit or similar — never upload a file to the site itself). Nothing here ever comes from files in the project folder anymore, only from these links.</p>
+
+    <h3 style="margin:8px 0 10px; font-size:16px;">Hero Section Images</h3>
+    <p class="admin-empty-note" style="padding-top:0;">The full-width slideshow at the top of the home page. Add as many image links as you want, in the order you want them to show.</p>
+    <form class="admin-form" id="hero-images-form">
+      <div id="hero-images-repeater"></div>
+      <button type="button" class="repeater-add" id="hero-images-add">+ Add another image link</button>
+      <div class="admin-form-actions">
+        <button type="submit" class="btn btn-primary">Save Hero Images</button>
+      </div>
+    </form>
+
+    <h3 style="margin:32px 0 10px; font-size:16px;">Category Images</h3>
+    <p class="admin-empty-note" style="padding-top:0;">One photo per category tile on the home page's "Shop by category" section. Leave any blank to keep the plain icon instead of a photo for that category.</p>
+    <form class="admin-form" id="category-images-form">
+      <div class="field">
+        <label for="cat-img-sarees">Sarees</label>
+        <input type="url" id="cat-img-sarees" placeholder="https://...">
+      </div>
+      <div class="field">
+        <label for="cat-img-unstitched">Unstitched Dress Materials</label>
+        <input type="url" id="cat-img-unstitched" placeholder="https://...">
+      </div>
+      <div class="field">
+        <label for="cat-img-readymade">Ready-Made Dresses</label>
+        <input type="url" id="cat-img-readymade" placeholder="https://...">
+      </div>
+      <div class="field">
+        <label for="cat-img-jewellery">Jewellery</label>
+        <input type="url" id="cat-img-jewellery" placeholder="https://...">
+      </div>
+      <div class="admin-form-actions">
+        <button type="submit" class="btn btn-primary">Save Category Images</button>
+      </div>
+    </form>
+
+    <h3 style="margin:32px 0 10px; font-size:16px;">Trending Videos</h3>
     <p class="admin-empty-note" style="padding-top:0;">Paste a direct video link (e.g. an .mp4 hosted on ImageKit) — not just Instagram, any playable video link works. Add as many as you want; they all show on the home page "Trending Now" row, scrollable.</p>
     <form class="admin-form" id="insta-form">
       <div id="insta-videos-repeater"></div>
@@ -282,11 +318,8 @@
         <button type="submit" class="btn btn-primary">Save Videos</button>
       </div>
     </form>
-  </section>
 
-  <!-- ---------- TOP SELLING ---------- -->
-  <section class="admin-panel" id="panel-topselling">
-    <div class="admin-panel-head"><h2>Top Selling</h2></div>
+    <h3 style="margin:32px 0 10px; font-size:16px;">Top Selling</h3>
     <p class="admin-empty-note" style="padding-top:0;">Type each product's ID (from the Products tab's "Product ID" column) to pull it in — any mix of categories, no limit. They show in this order, scrollable.</p>
     <form class="admin-form" id="top-selling-form">
       <div id="top-selling-repeater"></div>
@@ -349,6 +382,8 @@
 <script type="module" src="js/admin-wishlist-insights.js"></script>
 <script type="module" src="js/admin-instagram.js"></script>
 <script type="module" src="js/admin-top-selling.js"></script>
+<script type="module" src="js/admin-hero-images.js"></script>
+<script type="module" src="js/admin-category-images.js"></script>
 <script type="module" src="js/admin-home-order.js"></script>
 <script type="module" src="js/admin-announcement.js"></script>
 <script type="module" src="js/admin-customers.js"></script>

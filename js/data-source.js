@@ -83,6 +83,28 @@ const DataSource = {
     } catch (e) {
       return [];
     }
+  },
+
+  // Homepage hero slideshow images (admin's Homepage Media tab) — direct
+  // image links only, never files in the project folder.
+  async getHeroImages() {
+    try {
+      const snap = await getDoc(doc(db, 'meta', 'heroImages'));
+      return snap.exists() ? (snap.data().urls || []).filter(Boolean) : [];
+    } catch (e) {
+      return [];
+    }
+  },
+
+  // One image link per category tile (admin's Homepage Media tab). A
+  // category with no link set just keeps its plain outline icon.
+  async getCategoryImages() {
+    try {
+      const snap = await getDoc(doc(db, 'meta', 'categoryImages'));
+      return snap.exists() ? snap.data() : {};
+    } catch (e) {
+      return {};
+    }
   }
 };
 

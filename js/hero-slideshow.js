@@ -1,10 +1,12 @@
-// Rotates through window.HERO_IMAGES (see js/hero-images.js) as a
+// Rotates through hero images set in the admin's Homepage Media tab
+// (meta/heroImages, read live via DataSource.getHeroImages) as a
 // full-width crossfading slideshow. One image just displays statically;
-// two or more auto-advance on a timer.
-function initHeroSlideshow(containerId) {
+// two or more auto-advance on a timer. No local files involved — every
+// image is a direct link the owner pasted in.
+async function initHeroSlideshow(containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
-  const images = window.HERO_IMAGES || [];
+  const images = await DataSource.getHeroImages();
   if (!images.length) return;
 
   container.innerHTML = images.map((src, i) =>
