@@ -142,9 +142,9 @@ h1,h2,h3{font-family:var(--serif); font-weight:600; font-style:italic; color:var
 
 /* ---------- HERO ---------- */
 .hero{ text-align:center; }
-.hero-slideshow{ position:relative; width:100%; aspect-ratio:16/7; max-height:380px; overflow:hidden; background:var(--cream-2); }
+.hero-slideshow{ position:relative; width:100%; aspect-ratio:16/9; max-height:560px; overflow:hidden; background:var(--cream-2); }
 .hero-slideshow img{
-  position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 15%;
   opacity:0; transition:opacity 1s ease;
 }
 .hero-slideshow img.active{ opacity:1; }
