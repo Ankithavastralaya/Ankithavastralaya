@@ -91,10 +91,10 @@ h1,h2,h3{font-family:var(--serif); font-weight:600; font-style:italic; color:var
 /* ---------- NAV ---------- */
 #nav{
   position:sticky; top:0; z-index:100;
-  background:var(--white); border-bottom:1px solid var(--line);
+  background:var(--white);
 }
-.nav-inner{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 24px; }
-@media (max-width:640px){ .nav-inner{ padding:14px 16px; } }
+.nav-inner{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:4px 24px; }
+@media (max-width:640px){ .nav-inner{ padding:4px 16px; } }
 .nav-logo{ display:flex; align-items:center; }
 .nav-logo img{ height:92px; width:auto; display:block; }
 @media (max-width:480px){ .nav-logo img{ height:74px; } }
