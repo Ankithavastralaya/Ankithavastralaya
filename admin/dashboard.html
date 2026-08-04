@@ -24,6 +24,7 @@
   <nav class="admin-tabs">
     <button class="admin-tab active" data-tab="products" type="button">Products</button>
     <button class="admin-tab" data-tab="orders" type="button">Orders</button>
+    <button class="admin-tab" data-tab="customers" type="button">Customers</button>
     <button class="admin-tab" data-tab="wishlist" type="button">Wishlist Insights</button>
     <button class="admin-tab" data-tab="instagram" type="button">Trending Videos</button>
     <button class="admin-tab" data-tab="topselling" type="button">Top Selling</button>
@@ -229,6 +230,24 @@
     <p class="admin-empty-note" id="orders-empty" style="display:none;">No orders yet.</p>
   </section>
 
+  <!-- ---------- CUSTOMERS ---------- -->
+  <section class="admin-panel" id="panel-customers">
+    <div class="admin-panel-head">
+      <h2>Customers</h2>
+      <button class="btn btn-primary btn-small" id="customers-export-btn" type="button">Export CSV</button>
+    </div>
+    <p class="admin-empty-note" style="padding-top:0;">Every unique contact from orders, wishlist notify requests, and newsletter signups, combined and de-duplicated by email/phone.</p>
+    <div class="admin-stats-row" id="customers-stats-row"></div>
+    <input type="text" id="customers-filter-input" placeholder="Filter by name, email, or phone" style="max-width:420px; margin-bottom:16px; padding:9px 12px; font-family:var(--sans); font-size:13.5px; border:1px solid var(--line); border-radius:var(--radius); background:var(--white); color:var(--ink); display:block;">
+    <table class="admin-table" id="customers-table">
+      <thead>
+        <tr><th>Name</th><th>Email</th><th>Phone</th><th>Source(s)</th><th>First Seen</th></tr>
+      </thead>
+      <tbody id="customers-tbody"></tbody>
+    </table>
+    <p class="admin-empty-note" id="customers-empty" style="display:none;">No customer contacts yet.</p>
+  </section>
+
   <!-- ---------- WISHLIST INSIGHTS ---------- -->
   <section class="admin-panel" id="panel-wishlist">
     <div class="admin-panel-head"><h2>Wishlist Insights</h2></div>
@@ -332,5 +351,6 @@
 <script type="module" src="js/admin-top-selling.js"></script>
 <script type="module" src="js/admin-home-order.js"></script>
 <script type="module" src="js/admin-announcement.js"></script>
+<script type="module" src="js/admin-customers.js"></script>
 </body>
 </html>
