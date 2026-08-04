@@ -7,10 +7,14 @@
 import { db } from './firebase-init.js';
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
+function escapeHtmlAttr(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 function videoSlotHTML(url) {
   return `
     <div class="insta-video-slot">
-      <video src="${url}" controls playsinline preload="metadata"></video>
+      <video src="${escapeHtmlAttr(url)}" controls playsinline preload="metadata"></video>
     </div>`;
 }
 

@@ -79,7 +79,7 @@ function openQuickView(product) {
 
   const name = escapeHtmlAttr(product.name);
   modal.querySelector('#quickview-body').innerHTML = `
-    <div class="quickview-photo"><img src="${photo}" alt="${name}"></div>
+    <div class="quickview-photo"><img src="${escapeHtmlAttr(photo)}" alt="${name}"></div>
     <div class="quickview-info">
       <div class="pd-cat">${escapeHtmlAttr(DataSource.categoryLabel(product.category))}</div>
       <h3 class="quickview-name">${name}</h3>

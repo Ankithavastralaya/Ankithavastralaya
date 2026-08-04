@@ -36,7 +36,7 @@ function productCardHTML(product) {
   return `
     <div class="product-card ${soldOut ? 'sold_out' : ''}">
       <a href="product.html?id=${encodeURIComponent(product.id)}" class="product-card-photo">
-        <img src="${photo}" alt="${name}" loading="lazy">
+        <img src="${escapeHtml(photo)}" alt="${name}" loading="lazy">
         <span class="stock-badge ${product.stockStatus}">${badgeLabel}</span>
         <button class="wishlist-btn ${wished ? 'active' : ''}" data-id="${product.id}" data-pet="${randomPet()}" type="button" aria-label="${wished ? 'Remove from wishlist' : 'Add to wishlist'}">${WISHLIST_HEART_SVG}${WISHLIST_CAT_SVG}${WISHLIST_DOG_SVG}</button>
         <button class="product-card-quickview" data-id="${product.id}" type="button" aria-label="Quick view">Quick View</button>

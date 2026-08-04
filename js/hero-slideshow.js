@@ -3,6 +3,10 @@
 // full-width crossfading slideshow. One image just displays statically;
 // two or more auto-advance on a timer. No local files involved — every
 // image is a direct link the owner pasted in.
+function escapeHtmlAttr(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
 async function initHeroSlideshow(containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -10,7 +14,7 @@ async function initHeroSlideshow(containerId) {
   if (!images.length) return;
 
   container.innerHTML = images.map((src, i) =>
-    `<img src="${src}" alt="Ankitha Vastralaya" class="${i === 0 ? 'active' : ''}">`
+    `<img src="${escapeHtmlAttr(src)}" alt="Ankitha Vastralaya" class="${i === 0 ? 'active' : ''}">`
   ).join('');
 
   if (images.length < 2) return;
