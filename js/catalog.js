@@ -206,6 +206,18 @@ async function initHomeFeatured() {
 
   const toggle = document.getElementById('grid-view-toggle');
   if (toggle) {
+    // Default the toggle itself to match what actually suits the device —
+    // 2-per-row on phones, 4-per-row on tablets/laptops — instead of
+    // always starting on 4 regardless of screen size. Still fully
+    // clickable/changeable afterwards, this only sets the starting state.
+    const startOnTwo = window.innerWidth <= 720;
+    if (startOnTwo) {
+      toggle.querySelectorAll('.grid-view-btn').forEach(b => b.classList.remove('active'));
+      const twoBtn = toggle.querySelector('.grid-view-btn[data-mode="2"]');
+      if (twoBtn) twoBtn.classList.add('active');
+      grid.classList.add('grid-2up');
+    }
+
     toggle.querySelectorAll('.grid-view-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         toggle.querySelectorAll('.grid-view-btn').forEach(b => b.classList.remove('active'));
