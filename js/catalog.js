@@ -153,6 +153,46 @@ function applyOrder(products, orderIds) {
   return ordered;
 }
 
+// Renders "Sub-Category" filter pills (e.g. Kalamkari, Patola — whatever
+// the owner has typed into a product's Sub-Category field) above a grid,
+// but only when at least one product in the list actually has one set —
+// stays empty/hidden otherwise, so this never shows up as a confusing
+// empty row on pages with no sub-categories in use yet. Clicking a pill
+// re-renders the same grid filtered to just that value; "All" (shown
+// first, active by default) goes back to the full list.
+function setupCollectionFilter(filterId, gridId, products) {
+  const filterEl = document.getElementById(filterId);
+  if (!filterEl) return;
+
+  const names = Array.from(new Set(
+    products.map(p => ((p.attributes && p.attributes.subCategory) || '').trim()).filter(Boolean)
+  )).sort();
+
+  if (!names.length) {
+    filterEl.innerHTML = '';
+    return;
+  }
+
+  function renderChips(active) {
+    const options = ['All', ...names];
+    filterEl.innerHTML = options.map(name => `
+      <button type="button" class="collection-filter-btn ${name === active ? 'active' : ''}" data-name="${escapeHtml(name === 'All' ? '' : name)}">${escapeHtml(name)}</button>
+    `).join('');
+    filterEl.querySelectorAll('.collection-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const name = btn.dataset.name;
+        const filtered = name
+          ? products.filter(p => ((p.attributes && p.attributes.subCategory) || '').trim() === name)
+          : products;
+        renderProductGrid(gridId, filtered);
+        renderChips(name || 'All');
+      });
+    });
+  }
+
+  renderChips('All');
+}
+
 async function initHomeFeatured() {
   const grid = document.getElementById('featured-grid');
   if (!grid) return;
@@ -160,7 +200,9 @@ async function initHomeFeatured() {
     DataSource.getAllProducts(),
     DataSource.getHomeOrder()
   ]);
-  renderProductGrid('featured-grid', applyOrder(all, orderIds));
+  const ordered = applyOrder(all, orderIds);
+  renderProductGrid('featured-grid', ordered);
+  setupCollectionFilter('featured-collection-filter', 'featured-grid', ordered);
 
   const toggle = document.getElementById('grid-view-toggle');
   if (toggle) {
@@ -204,15 +246,13 @@ async function initCategoryPage() {
   if (heading) heading.textContent = cat ? DataSource.categoryLabel(cat) : 'All Products';
   document.title = (cat ? DataSource.categoryLabel(cat) : 'All Products') + ' — Ankitha Vastralaya';
 
-  // No filter UI on purpose — the owner wants customers to just scroll and
-  // see the full collection without picking through selections first;
-  // availability is still clear from each card's In Stock/Pre-Order/Sold
-  // Out badge.
   const [products, orderIds] = await Promise.all([
     DataSource.getProductsByCategory(cat),
     cat ? DataSource.getCategoryOrder(cat) : Promise.resolve([])
   ]);
-  renderProductGrid('product-grid', cat ? applyOrder(products, orderIds) : products);
+  const ordered = cat ? applyOrder(products, orderIds) : products;
+  renderProductGrid('product-grid', ordered);
+  setupCollectionFilter('category-collection-filter', 'product-grid', ordered);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
