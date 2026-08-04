@@ -52,6 +52,7 @@ function tileHTML(product) {
   return `
     <div class="home-order-tile" data-id="${product.id}">
       <img src="${escapeHtml(photo)}" alt="">
+      <span class="home-order-id">${escapeHtml(product.id)}</span>
       <span class="home-order-name">${escapeHtml(product.name)}</span>
     </div>`;
 }
