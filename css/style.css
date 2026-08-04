@@ -529,7 +529,7 @@ footer{
 .footer-social{ display:flex; gap:14px; margin-top:2px; }
 .footer-social a{ color:rgba(255,255,255,0.75); display:inline-flex; }
 .footer-social a:hover{ color:#fff; }
-.footer-social svg{ width:14px; height:14px; }
+.footer-social svg{ width:15px; height:15px; }
 .footer-newsletter-col p{ margin:0 0 14px; color:rgba(255,255,255,0.6); line-height:1.6; }
 .footer-newsletter{ display:flex; gap:8px; flex-wrap:wrap; }
 .footer-newsletter input{
