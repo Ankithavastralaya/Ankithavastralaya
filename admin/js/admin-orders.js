@@ -7,8 +7,11 @@
 // tap-to-send pattern as the customer's own order message in checkout.js,
 // since there's no paid WhatsApp Business API here to send it silently.
 
-import { db } from '../../js/firebase-init.js';
+import { db, functions } from '../../js/firebase-init.js';
 import { collection, getDocs, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { httpsCallable } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-functions.js";
+
+const refundOrderFn = httpsCallable(functions, 'refundOrder');
 
 const STATUSES = [
   { value: 'placed', label: 'Placed' },
@@ -123,8 +126,11 @@ function renderStats(orders) {
   };
   const thisMonth = real.filter(inThisMonth);
 
-  const totalRevenue = real.reduce((sum, o) => sum + Number(o.subtotal || 0), 0);
-  const monthRevenue = thisMonth.reduce((sum, o) => sum + Number(o.subtotal || 0), 0);
+  // Refunded orders still count toward order volume, but their amount is
+  // excluded from revenue — money that went back out isn't revenue.
+  const revenueOf = (o) => o.refunded ? 0 : Number(o.subtotal || 0);
+  const totalRevenue = real.reduce((sum, o) => sum + revenueOf(o), 0);
+  const monthRevenue = thisMonth.reduce((sum, o) => sum + revenueOf(o), 0);
 
   const cards = [
     { label: 'Total Orders', value: real.length },
@@ -288,6 +294,15 @@ function renderOrder(orderId, order) {
         Paid: ${order.paidAt ? new Date(order.paidAt).toLocaleString('en-IN') : '—'}`
         : '<span style="color:var(--text-muted);">No payment record on this order (placed before Razorpay went live, or a test order).</span>'}
       </p>
+      ${order.refunded ? `
+      <p style="font-size:13.5px; line-height:1.7;">
+        <span style="color:var(--maroon); font-weight:600;">&#10003; Refunded</span> — Rs. ${Number(order.refundAmount || 0).toLocaleString('en-IN')}<br>
+        Refund ID: ${escapeHtml(order.refundId || '—')}<br>
+        Refunded: ${order.refundedAt ? new Date(order.refundedAt).toLocaleString('en-IN') : '—'}
+      </p>`
+      : order.paymentId ? `
+      <button class="btn btn-ghost btn-small" id="refund-order-btn" type="button" style="color:var(--maroon); border-color:var(--maroon);">Refund This Order</button>`
+      : ''}
 
       <h4 style="font-size:13px; text-transform:uppercase; letter-spacing:0.03em; color:var(--text-muted); margin:20px 0 8px;">Customer</h4>
       <p style="font-size:13.5px; line-height:1.7;">
@@ -354,6 +369,27 @@ function renderOrder(orderId, order) {
     renderOrder(orderId, { ...order, ...updates });
     loadAllOrders();
   });
+
+  const refundBtn = document.getElementById('refund-order-btn');
+  if (refundBtn) {
+    refundBtn.addEventListener('click', async () => {
+      const confirmed = confirm(`Refund order ${orderId} for Rs. ${Number(order.subtotal || 0).toLocaleString('en-IN')}? This cannot be undone.`);
+      if (!confirmed) return;
+      refundBtn.disabled = true;
+      refundBtn.textContent = 'Processing refund…';
+      try {
+        await refundOrderFn({ orderId });
+        showToast('Order refunded successfully');
+        loadAllOrders();
+        searchOrder();
+      } catch (e) {
+        console.error('Refund failed:', e);
+        showToast(e.message || 'Refund failed — please try again or check Razorpay directly');
+        refundBtn.disabled = false;
+        refundBtn.textContent = 'Refund This Order';
+      }
+    });
+  }
 }
 
 function showToast(msg) {
