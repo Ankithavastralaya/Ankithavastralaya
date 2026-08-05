@@ -156,6 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const confirmPanel = document.getElementById('confirm-panel');
           confirmPanel.style.display = 'block';
           confirmPanel.querySelector('#confirm-order-id').textContent = verifyRes.data.orderId;
+          confirmPanel.querySelector('#confirm-track-link').href = 'track-order.html?orderId=' + encodeURIComponent(verifyRes.data.orderId);
         } catch (err) {
           console.error('verifyRazorpayPayment failed:', err);
           if (err.code === 'functions/already-exists') {

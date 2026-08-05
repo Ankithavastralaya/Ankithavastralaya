@@ -489,6 +489,36 @@ body.quickview-lock{ overflow:hidden; }
 .confirm-panel h2{ margin-bottom:14px; }
 .confirm-panel p{ color:var(--text-muted); max-width:440px; margin:0 auto 22px; }
 
+.track-order-wrap{ max-width:440px; margin:0 auto 60px; }
+.track-order-form{ background:var(--white); border:1px solid var(--line); border-radius:var(--radius); padding:24px; }
+.track-order-error{ color:var(--maroon); font-size:13px; text-align:center; margin:0 0 12px; }
+.track-order-hint{ font-size:12.5px; color:var(--text-muted); text-align:center; margin:14px 4px 0; }
+.order-track-result{
+  background:var(--white); border:1px solid var(--line); border-radius:var(--radius);
+  padding:24px; margin-top:24px;
+}
+.order-track-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
+.order-track-id{ font-family:monospace; font-weight:700; font-size:15px; color:var(--maroon); }
+.order-track-date{ font-size:12px; color:var(--text-muted); margin-top:2px; }
+.order-track-message{ font-size:13.5px; color:var(--text-muted); margin:0 0 20px; }
+.order-track-timeline{ display:flex; justify-content:space-between; gap:6px; }
+.order-track-step{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;
+  font-size:11.5px; font-weight:600; text-transform:uppercase; letter-spacing:0.02em; color:var(--text-muted);
+  position:relative;
+}
+.order-track-step::before{
+  content:""; position:absolute; top:5px; left:-50%; width:100%; height:2px; background:var(--line); z-index:0;
+}
+.order-track-step:first-child::before{ display:none; }
+.order-track-step.done::before{ background:var(--maroon); }
+.order-track-dot{
+  width:12px; height:12px; border-radius:50%; background:var(--white); border:2px solid var(--line); z-index:1;
+}
+.order-track-step.done{ color:var(--maroon); }
+.order-track-step.done .order-track-dot{ background:var(--maroon); border-color:var(--maroon); }
+.order-track-dispatch{ font-size:13px; margin:18px 0 0; padding-top:16px; border-top:1px solid var(--line); }
+
 .insta-section{ padding-top:0; }
 /* Horizontal scroll, always sized for exactly 4 full tiles + a 10% peek
    of the 5th (the peek is the "there's more, swipe/scroll" affordance) —

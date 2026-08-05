@@ -3,30 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ankitha Vastralaya — Sarees, Dress Materials, Ready-Made &amp; Jewellery</title>
+<title>Track Your Order — Ankitha Vastralaya</title>
 <link rel="icon" href="hero-images/logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@300;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "ClothingStore",
-  "name": "Ankitha Vastralaya",
-  "url": "https://ankithavastralaya.com",
-  "logo": "https://ankithavastralaya.com/hero-images/logo.png",
-  "image": "https://ankithavastralaya.com/hero-images/logo.png",
-  "telephone": "+918500907070",
-  "email": "ankithavastralaya@gmail.com",
-  "sameAs": [
-    "https://www.instagram.com/ankithavastralaya/",
-    "https://www.youtube.com/@Ankithavastralaya"
-  ],
-  "areaServed": "Worldwide"
-}
-</script>
 </head>
-<body data-page="index">
+<body>
 
 <div class="announcement-banner" id="announcement-banner">
   <div class="announcement-banner-text" id="announcement-banner-text"></div>
@@ -62,96 +45,32 @@
   </div>
 </nav>
 
-<div class="hero">
-  <div class="hero-slideshow" id="hero-slideshow"></div>
-</div>
-
-<section class="wrap insta-section">
+<section class="wrap">
   <div class="section-head">
-    <h2>Trending Now</h2>
+    <div class="eyebrow">Already ordered?</div>
+    <h2>Track Your Order</h2>
   </div>
-  <div class="hscroll-carousel">
-    <div class="insta-video-grid" id="insta-video-grid-home"></div>
-    <button type="button" class="hscroll-btn hscroll-btn-prev" data-scroll-target="insta-video-grid-home" aria-label="Scroll left">&#10094;</button>
-    <button type="button" class="hscroll-btn hscroll-btn-next" data-scroll-target="insta-video-grid-home" aria-label="Scroll right">&#10095;</button>
-  </div>
-</section>
 
-<section class="wrap-wide" id="top-selling-section" style="display:none;">
-  <div class="section-head">
-    <div class="eyebrow">Handpicked</div>
-    <h2>Top Selling</h2>
-  </div>
-  <div class="hscroll-carousel">
-    <div class="product-grid hscroll-products" id="top-selling-grid"></div>
-    <button type="button" class="hscroll-btn hscroll-btn-prev" data-scroll-target="top-selling-grid" aria-label="Scroll left">&#10094;</button>
-    <button type="button" class="hscroll-btn hscroll-btn-next" data-scroll-target="top-selling-grid" aria-label="Scroll right">&#10095;</button>
-  </div>
-</section>
+  <div class="track-order-wrap">
+    <form id="track-order-form" class="track-order-form" novalidate>
+      <div class="field" data-field="orderId">
+        <label for="t-order-id">Order ID <span class="required">*</span></label>
+        <input id="t-order-id" type="text" placeholder="e.g. AV260805-4821" required>
+        <div class="field-error"></div>
+      </div>
+      <div class="field" data-field="phone">
+        <label for="t-phone">Phone Number Used at Checkout <span class="required">*</span></label>
+        <input id="t-phone" type="tel" required>
+        <div class="field-error"></div>
+      </div>
+      <p class="track-order-error" id="track-order-error" style="display:none;"></p>
+      <button type="submit" class="btn btn-primary btn-block" id="track-order-btn">Track Order</button>
+    </form>
 
-<section class="wrap cat-section">
-  <div class="section-head">
-    <div class="eyebrow">Shop by category</div>
-  </div>
-  <div class="cat-grid">
-    <a class="cat-tile" href="category.html?cat=sarees">
-      <div class="cat-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 8c1-2 3-3 6-3s5 1 6 3"/>
-          <path d="M4 20c0-7 2-12 2-12h12s2 5 2 12"/>
-          <path d="M8 20V9M11 20V7M14 20V7M17 20V9"/>
-        </svg>
-      </div>
-      <h3>Sarees</h3>
-    </a>
-    <a class="cat-tile" href="category.html?cat=unstitched">
-      <div class="cat-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="6" width="14" height="12" rx="1"/>
-          <ellipse cx="17" cy="12" rx="4" ry="6"/>
-          <path d="M7 9v6M11 9v6"/>
-        </svg>
-      </div>
-      <h3>Unstitched Dress Materials</h3>
-    </a>
-    <a class="cat-tile" href="category.html?cat=readymade">
-      <div class="cat-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 3.5a1.2 1.2 0 1 1-1.2 1.2"/>
-          <path d="M12 4.7V7"/>
-          <path d="M12 7l-6 4M12 7l6 4"/>
-          <path d="M6 11l-3 8h18l-3-8"/>
-          <path d="M9 11v3M15 11v3"/>
-        </svg>
-      </div>
-      <h3>Ready-Made Dresses</h3>
-    </a>
-    <a class="cat-tile" href="category.html?cat=jewellery">
-      <div class="cat-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 5c0 6 3 10 8 10s8-4 8-10"/>
-          <path d="M12 15v2"/>
-          <circle cx="12" cy="18.5" r="2.5"/>
-        </svg>
-      </div>
-      <h3>Jewellery</h3>
-    </a>
-  </div>
-</section>
+    <p class="track-order-hint">Your Order ID was shown on screen and emailed to you right after you paid. Don't have accounts? We don't use them — this lookup is all you need.</p>
 
-<section class="wrap-wide">
-  <div class="section-head grid-toggle-head">
-    <div class="grid-view-toggle" id="grid-view-toggle">
-      <button type="button" class="grid-view-btn active" data-mode="4" aria-label="Show 4 products per row">
-        <svg viewBox="0 0 20 20" fill="currentColor"><rect x="0.5" y="1" width="3" height="18" rx="1"/><rect x="5.7" y="1" width="3" height="18" rx="1"/><rect x="10.9" y="1" width="3" height="18" rx="1"/><rect x="16.1" y="1" width="3" height="18" rx="1"/></svg>
-      </button>
-      <button type="button" class="grid-view-btn" data-mode="2" aria-label="Show 2 products per row">
-        <svg viewBox="0 0 20 20" fill="currentColor"><rect x="1" y="1" width="8" height="18" rx="1"/><rect x="11" y="1" width="8" height="18" rx="1"/></svg>
-      </button>
-    </div>
+    <div class="order-track-result" id="order-track-result" style="display:none;"></div>
   </div>
-  <div class="collection-filter" id="featured-collection-filter"></div>
-  <div class="product-grid" id="featured-grid"></div>
 </section>
 
 <footer>
@@ -197,25 +116,13 @@
 
 <div id="toast"></div>
 
-<script src="js/hero-slideshow.js"></script>
-<script src="js/category-tile-images.js"></script>
-<script src="js/hscroll-buttons.js"></script>
 <script src="js/cart.js"></script>
-<script src="js/mini-cart-bar.js"></script>
-<script src="js/nav.js"></script>
-<script src="js/whatsapp-float.js"></script>
-<script type="module" src="js/data-source.js"></script>
-<script src="js/size-chart.js"></script>
-<script src="js/quickview.js"></script>
 <script src="js/wishlist.js"></script>
-<script type="module" src="js/wishlist-sync.js"></script>
 <script type="module" src="js/wishlist-notify.js"></script>
 <script type="module" src="js/newsletter.js"></script>
 <script type="module" src="js/announcement-banner.js"></script>
-<script src="js/catalog.js"></script>
-<script type="module" src="js/instagram.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', () => renderInstagramVideos('insta-video-grid-home'));
-</script>
+<script src="js/nav.js"></script>
+<script src="js/whatsapp-float.js"></script>
+<script type="module" src="js/track-order.js"></script>
 </body>
 </html>
